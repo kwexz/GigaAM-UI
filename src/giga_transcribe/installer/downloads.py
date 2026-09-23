@@ -28,6 +28,11 @@ def _sha256(path: Path) -> str:
     return h.hexdigest()
 
 
+def verify(path: str | Path, expected_sha256: str) -> bool:
+    path = Path(path)
+    return path.is_file() and _sha256(path) == expected_sha256.lower()
+
+
 def download(url: str, dest: str | Path, *, expected_sha256: str,
              on_progress=None, should_cancel=None) -> Path:
     """Download to dest atomically (via .part + resume + sha256 check)."""

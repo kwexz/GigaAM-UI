@@ -1,8 +1,13 @@
 # AGENTS.md — giga-transcribe
 
 Desktop app (PySide6, Windows + macOS Apple Silicon) for audio/video transcription
-with GigaAM-v3 + Silero VAD. Worker subprocess speaks JSONL over stdout; UI never
-imports torch/transformers directly.
+with GigaAM-v3 + Silero VAD. Inference runs in a QThread worker over core.jobs;
+UI never imports torch/transformers directly.
+
+Self-bootstrap distribution: light exe/app shows a setup page on first run
+(desktop/setup_page.py over installer/setup.py) listing components, total size
+and target dir; download starts only on user button. No separate installer
+framework, no silent downloads.
 
 ## Permanent
 
@@ -33,6 +38,5 @@ imports torch/transformers directly.
 
 ## Known gaps (no skill — use official docs + smoke builds)
 
-- Qt Installer Framework online repositories.
 - PySide6 + PyInstaller + torch/transformers native-lib bundling.
 - Authenticode specifics beyond the checklist.
