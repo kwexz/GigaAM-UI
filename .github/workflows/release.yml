@@ -44,7 +44,23 @@ jobs:
           --collect-all silero_vad --collect-all soundfile
           --collect-all regex --collect-all safetensors
           --exclude-module PySide6 --exclude-module shiboken6
+          --exclude-module sklearn --exclude-module pandas
+          --exclude-module matplotlib --exclude-module PIL
+          --exclude-module grpc --exclude-module google
+          --exclude-module scipy --exclude-module tkinter
+          --exclude-module pydoc
           src/giga_transcribe/worker/__main__.py
+      - name: Prune dead weight (static libs, headers)
+        shell: pwsh
+        run: |
+          # PyInstaller hauls torch's 2+ GB of .lib link-libraries and headers:
+          # useless at runtime. NOTE: -Include is silently ignored with
+          # -LiteralPath on PS 5.1, hence Where-Object (deletes must filter!).
+          $root = "dist/giga-worker/_internal"
+          Get-ChildItem -Path $root -Recurse -File |
+            Where-Object { $_.Extension -in ".lib", ".pdb", ".exp" } |
+            Remove-Item -Force
+          Remove-Item -Path "$root/torch/include" -Recurse -Force -ErrorAction SilentlyContinue
       - name: Build UI bundle (the light exe users download first)
         run: >
           pip install PySide6 &&

@@ -39,7 +39,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['PySide6', 'shiboken6'],
+    excludes=['PySide6', 'shiboken6', 'sklearn', 'pandas', 'matplotlib', 'PIL', 'grpc', 'google', 'scipy', 'tkinter', 'pydoc'],
     noarchive=False,
     optimize=0,
 )
