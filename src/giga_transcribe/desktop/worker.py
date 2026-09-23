@@ -25,7 +25,7 @@ class TranscribeWorker(QObject):
 
     @Slot()
     def run(self):
-        from ..core import jobs  # lazy: keep UI import light, no torch at startup
+        from giga_transcribe.core import jobs  # lazy: keep UI import light
         result = jobs.run(
             self._job,
             on_stage=self.stage.emit,

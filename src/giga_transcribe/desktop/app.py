@@ -4,8 +4,8 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
-from ..core import compat
-from .main_window import MainWindow
+from giga_transcribe.core import compat
+from giga_transcribe.desktop.main_window import MainWindow
 
 
 def main(argv=None) -> int:

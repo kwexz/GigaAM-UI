@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from .core import compat, devices, formats, jobs, models
+from giga_transcribe.core import compat, devices, formats, jobs, models
 
 
 def main(argv=None) -> int:

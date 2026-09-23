@@ -19,8 +19,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from ..core import devices, formats, jobs, models
-from .worker import TranscribeWorker
+from giga_transcribe.core import devices, formats, jobs, models
+from giga_transcribe.desktop.worker import TranscribeWorker
 
 AUDIO_FILTER = "Audio/video (*.wav *.mp3 *.flac *.ogg *.m4a *.mp4 *.mkv *.avi *.mov);;All (*)"
 
