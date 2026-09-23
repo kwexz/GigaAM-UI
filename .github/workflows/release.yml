@@ -45,6 +45,17 @@ jobs:
           --collect-all regex --collect-all safetensors
           --exclude-module PySide6 --exclude-module shiboken6
           src/giga_transcribe/worker/__main__.py
+      - name: Build UI bundle (the light exe users download first)
+        run: >
+          pip install PySide6 &&
+          pyinstaller --onedir --noconfirm --windowed --name giga-gui
+          --paths src --distpath dist-ui --workpath build-ui
+          --exclude-module torch --exclude-module torchaudio
+          --exclude-module transformers --exclude-module tokenizers
+          --exclude-module huggingface_hub --exclude-module hydra
+          --exclude-module omegaconf --exclude-module sentencepiece
+          --exclude-module silero_vad --exclude-module soundfile
+          src/giga_transcribe/desktop/app.py
       - name: Sign Windows binary (needs WIN_CERT_B64 + WIN_CERT_PASS)
         if: runner.os == 'Windows' && secrets.WIN_CERT_B64 != ''
         shell: pwsh
@@ -58,12 +69,14 @@ jobs:
           $signtool = Join-Path $sdk.FullName 'x64\signtool.exe'
           & $signtool sign /f $pfx /p '${{ secrets.WIN_CERT_PASS }}' `
             /tr http://timestamp.digicert.com /td sha256 /fd sha256 `
-            dist/giga-worker/giga-worker.exe
+            (Get-ChildItem dist, dist-ui -Recurse -Include *.exe).FullName
       - name: Sign macOS binary (needs MAC_SIGN_IDENTITY)
         if: runner.os == 'macOS' && secrets.MAC_SIGN_IDENTITY != ''
         run: |
-          codesign --deep --force --options runtime \
-            --sign "${{ secrets.MAC_SIGN_IDENTITY }}" dist/giga-worker/giga-worker
+          find dist dist-ui -type f -name 'giga-*' -perm +111 | while read -r b; do
+            codesign --deep --force --options runtime \
+              --sign "${{ secrets.MAC_SIGN_IDENTITY }}" "$b"
+          done
       - name: Pack engine + fetch ffmpeg + manifest fragment
         shell: pwsh
         run: |
@@ -72,6 +85,8 @@ jobs:
           $exe = "giga-worker/giga-worker" + $(if ($isWin) { ".exe" } else { "" })
           $pack = "${{ matrix.pack }}.zip"
           Compress-Archive -Path dist/giga-worker -DestinationPath $pack
+          $gui = "giga-gui-" + $(if ($isWin) { "win-x64" } else { "mac-arm64" }) + ".zip"
+          Compress-Archive -Path dist-ui/giga-gui -DestinationPath $gui
           if ($isWin) {
             $ffUrl = $env:FFMPEG_WIN_URL; $ffId = "ffmpeg-win-x64"
             $ffFiles = @("bin/ffmpeg.exe", "bin/ffprobe.exe")
@@ -113,6 +128,7 @@ jobs:
           name: ${{ matrix.pack }}
           path: |
             ${{ matrix.pack }}.zip
+            giga-gui-*.zip
             ffmpeg-*.zip
             manifest-${{ matrix.pack }}.json
 
