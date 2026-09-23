@@ -1,8 +1,23 @@
-"""Device detection and fit guards. Only actually-available devices surface."""
+"""Device detection and fit guards. torch-free import: UI bundle has no torch.
+
+Only actually-available devices surface. When torch is missing (light UI
+bundle before engine setup), this module still imports and reports cpu.
+"""
 import os
 from dataclasses import dataclass
 
-import torch
+
+def _torch():
+    try:
+        import torch
+    except ImportError:
+        return None
+    return torch
+
+
+def has_torch() -> bool:
+    return _torch() is not None
+
 
 # GigaAM-v3 is ~240M params in fp32; activations on <=22 s chunks are small
 # next to weights. Keep a headroom factor for allocator fragmentation.
@@ -20,8 +35,11 @@ class DeviceInfo:
 
 
 def describe() -> list[DeviceInfo]:
+    torch = _torch()
     out = [DeviceInfo(id="cpu", kind="cpu",
-                      cores=os.cpu_count() or torch.get_num_threads())]
+                      cores=os.cpu_count() or 4)]
+    if torch is None:
+        return out
     if torch.cuda.is_available():
         for i in range(torch.cuda.device_count()):
             props = torch.cuda.get_device_properties(i)

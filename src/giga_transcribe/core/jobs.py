@@ -1,37 +1,12 @@
 """One transcription task: input -> model/device/format -> output file."""
 import os
 import time
-from dataclasses import dataclass, field
-from pathlib import Path
 
 from . import devices, engine, formats
-from .events import Progress, Segment
+from .events import (Job, JobResult, Progress, Segment, default_output,
+                     partial_path)
 
-
-@dataclass
-class Job:
-    input: str
-    output: str
-    fmt: str = "srt"
-    model_id: str = "e2e_rnnt"
-    device: str = "cpu"
-
-
-@dataclass
-class JobResult:
-    status: str  # done | cancelled | error
-    output: str
-    elapsed: float
-    segments: int
-    error: str = ""
-
-
-def default_output(input_path: str, fmt: str) -> str:
-    return str(Path(input_path).with_suffix(f".{fmt}"))
-
-
-def partial_path(output: str) -> str:
-    return output + ".partial"
+__all__ = ["Job", "JobResult", "default_output", "partial_path", "run"]
 
 
 def run(job: Job, *, on_stage=None, on_segments=None, on_chunk=None,

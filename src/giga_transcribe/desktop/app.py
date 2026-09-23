@@ -13,7 +13,7 @@ from giga_transcribe.installer.state import data_dir
 def main(argv=None) -> int:
     compat.load_dotenv()
     app = QApplication(argv or sys.argv)
-    manifest = builtin.dev_manifest()
+    manifest = builtin.default_manifest()
 
     if setup.is_installed():
         compat.ensure_ffmpeg()

@@ -19,8 +19,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from giga_transcribe.core import devices, formats, jobs, models
+from giga_transcribe.core import devices, formats, models
+from giga_transcribe.core.events import Job, default_output
 from giga_transcribe.desktop.worker import TranscribeWorker
+from giga_transcribe.installer.engine import find_engine
 
 AUDIO_FILTER = "Audio/video (*.wav *.mp3 *.flac *.ogg *.m4a *.mp4 *.mkv *.avi *.mov);;All (*)"
 
@@ -162,9 +164,9 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Нет файла", "Сначала выберите аудио/видео файл.")
             return
         fmt = self.format_cb.currentData()
-        job = jobs.Job(
+        job = Job(
             input=self._job_path,
-            output=jobs.default_output(self._job_path, fmt),
+            output=default_output(self._job_path, fmt),
             fmt=fmt,
             model_id=self.model_cb.currentData(),
             device=self.device_cb.currentData(),
@@ -176,18 +178,44 @@ class MainWindow(QMainWindow):
         self.progress.setVisible(True)
         self.progress.setRange(0, 0)  # indeterminate until VAD reports total
 
-        self._thread = QThread(self)
-        self._worker = TranscribeWorker(job)
-        self._worker.moveToThread(self._thread)
-        self._thread.started.connect(self._worker.run)
+        engine_exe = find_engine()
+        if engine_exe is not None:
+            self._start_engine_process(job, engine_exe)
+        elif devices.has_torch():
+            self._start_in_process(job)
+        else:
+            self._timer.stop()
+            self._set_running(False)
+            self.progress.setVisible(False)
+            QMessageBox.warning(
+                self, "Нет движка",
+                "Нейросетевой движок не установлен.\n"
+                "Перезапустите приложение и пройдите установку компонентов.")
+            return
+
+    def _wire_common(self):
         self._worker.stage.connect(self._on_stage)
         self._worker.segments_total.connect(self._on_total)
         self._worker.chunk.connect(self._on_chunk)
         self._worker.finished.connect(self._on_finished)
+
+    def _start_in_process(self, job):
+        self._thread = QThread(self)
+        self._worker = TranscribeWorker(job)
+        self._worker.moveToThread(self._thread)
+        self._thread.started.connect(self._worker.run)
+        self._wire_common()
         self._worker.finished.connect(self._thread.quit)
         self._thread.finished.connect(self._worker.deleteLater)
         self._thread.finished.connect(self._thread.deleteLater)
         self._thread.start()
+
+    def _start_engine_process(self, job, engine_exe):
+        from giga_transcribe.desktop.worker_process import EngineProcessWorker
+        self._thread = None
+        self._worker = EngineProcessWorker(job, engine_exe)
+        self._wire_common()
+        self._worker.run()
 
     def _on_cancel(self):
         if self._worker is not None:

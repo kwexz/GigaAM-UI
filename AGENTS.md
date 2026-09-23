@@ -1,8 +1,9 @@
 # AGENTS.md — giga-transcribe
 
 Desktop app (PySide6, Windows + macOS Apple Silicon) for audio/video transcription
-with GigaAM-v3 + Silero VAD. Inference runs in a QThread worker over core.jobs;
-UI never imports torch/transformers directly.
+with GigaAM-v3 + Silero VAD. Inference runs in a downloaded engine bundle via
+QProcess/JSONL, or in-process QThread over core.jobs in dev; UI never imports
+torch/transformers directly.
 
 Self-bootstrap distribution: light exe/app shows a setup page on first run
 (desktop/setup_page.py over installer/setup.py) listing components, total size

@@ -27,7 +27,19 @@ def tune_cpu_threads():
         torch.set_num_threads(min(os.cpu_count() or 4, 8))
 
 
+def _stub_unused_pyannote():
+    # transformers import-checks every package named in modeling_gigaam.py,
+    # including pyannote — needed only by get_pipeline(), dead code on the
+    # Silero path. Satisfy importlib.import_module with an empty module
+    # instead of bundling ~1 GB of dead deps. Breaks loudly if remote code
+    # ever touches pyannote at runtime (frozen e2e covers model loading).
+    import sys
+    import types
+    sys.modules.setdefault("pyannote", types.ModuleType("pyannote"))
+
+
 def load_model(model_id: str, device: str):
+    _stub_unused_pyannote()
     info = models.get(model_id)
     if device == "cpu":
         tune_cpu_threads()
