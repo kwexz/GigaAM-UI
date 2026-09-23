@@ -125,7 +125,7 @@ def ensure(manifest: Manifest, target: Path | None = None, *,
            on_component=None, on_progress=None,
            should_cancel=None) -> list[Component]:
     """Download missing components. Returns what was fetched (empty = all had)."""
-    target = target or state.data_dir()
+    target = Path(target or state.data_dir())
     fetched: list[Component] = []
     pending = missing(manifest, target)
     for i, comp in enumerate(pending):
