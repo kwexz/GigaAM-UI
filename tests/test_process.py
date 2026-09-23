@@ -74,6 +74,21 @@ def test_find_engine(tmp_path):
         assert find_engine(tmp_path).endswith("giga-worker")
 
 
+def test_find_engine_platform(tmp_path, monkeypatch):
+    import giga_transcribe.installer.engine as eng_mod
+    for d, exe in (("engine-cpu-win-x64", "giga-worker.exe"),
+                   ("engine-cpu-mac-arm64", "giga-worker")):
+        p = tmp_path / d / "giga-worker" / exe
+        p.parent.mkdir(parents=True)
+        p.write_bytes(b"x")
+    monkeypatch.setattr(eng_mod, "_exe_name", lambda: "giga-worker.exe")
+    monkeypatch.setattr(eng_mod, "current_platform", lambda: "win-x64")
+    assert "engine-cpu-win-x64" in find_engine(tmp_path)
+    monkeypatch.setattr(eng_mod, "current_platform", lambda: "mac-arm64")
+    monkeypatch.setattr(eng_mod, "_exe_name", lambda: "giga-worker")
+    assert "engine-cpu-mac-arm64" in find_engine(tmp_path)
+
+
 def test_fetch_manifest_fallback(monkeypatch):
     with pytest.raises(builtin.ManifestError):
         builtin.fetch_manifest("http://127.0.0.1:9/nope", timeout=2)

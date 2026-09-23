@@ -16,6 +16,7 @@ class Component:
     extract: bool = False  # url is a .zip/.tar.gz to unpack into component dir
     strip_top: bool = False  # drop first path segment (versioned top folder)
     files: tuple = ()  # relative paths that must exist after install (required if extract)
+    platforms: tuple = ()  # e.g. ("win-x64",); empty = any platform
 
 
 @dataclass

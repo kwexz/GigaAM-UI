@@ -115,9 +115,11 @@ jobs:
           if ($isWin) {
             $ffUrl = $env:FFMPEG_WIN_URL; $ffId = "ffmpeg-win-x64"
             $ffFiles = @("bin/ffmpeg.exe", "bin/ffprobe.exe")
+            $plat = "win-x64"
           } else {
             $ffUrl = $env:FFMPEG_MAC_URL; $ffId = "ffmpeg-mac-arm64"
             $ffFiles = @("ffmpeg")
+            $plat = "mac-arm64"
           }
           $ffName = "$ffId.zip"
           Invoke-WebRequest -Uri $ffUrl -OutFile $ffName
@@ -134,6 +136,7 @@ jobs:
                 sha256 = (Get-FileHash $pack -Algorithm SHA256).Hash.ToLower()
                 size = (Get-Item $pack).Length
                 extract = $true; strip_top = $false; files = @($exe)
+                platforms = @($plat)
               },
               [ordered]@{
                 id = $ffId
@@ -144,6 +147,7 @@ jobs:
                 sha256 = (Get-FileHash $ffName -Algorithm SHA256).Hash.ToLower()
                 size = (Get-Item $ffName).Length
                 extract = $true; strip_top = $true; files = $ffFiles
+                platforms = @($plat)
               }
             )
           } | ConvertTo-Json -Depth 5

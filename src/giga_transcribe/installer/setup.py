@@ -1,6 +1,7 @@
 """First-run setup orchestration: what is missing, how much, fetch it."""
 import json
 import shutil
+import sys
 import tarfile
 import tempfile
 import zipfile
@@ -11,6 +12,22 @@ from . import downloads, state
 from .manifest import Component, Manifest
 
 MARKER = "installed.json"
+
+
+def current_platform() -> str:
+    """win-x64 | mac-arm64 | linux-x64 (extend when new packs appear)."""
+    if sys.platform == "win32":
+        return "win-x64"
+    if sys.platform == "darwin":
+        return "mac-arm64"
+    return "linux-x64"
+
+
+def for_this_platform(manifest: Manifest) -> Manifest:
+    plat = current_platform()
+    comps = tuple(c for c in manifest.components
+                  if not c.platforms or plat in c.platforms)
+    return Manifest(version=manifest.version, components=comps)
 
 
 @dataclass
@@ -34,6 +51,7 @@ def _installed_files(target: Path, component: Component) -> bool:
 
 
 def status(manifest: Manifest, target: Path | None = None) -> list[SetupStatus]:
+    manifest = for_this_platform(manifest)
     target = target or state.data_dir()
     return [SetupStatus(c, _installed_files(target, c))
             for c in manifest.components]

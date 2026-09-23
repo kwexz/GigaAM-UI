@@ -23,7 +23,7 @@ class SetupPage(QWidget):
 
     def __init__(self, manifest, target=None, fetch_error: str | None = None):
         super().__init__()
-        self._manifest = manifest
+        self._manifest = setup.for_this_platform(manifest)
         self._fetch_error = fetch_error
         self._target = Path(target or data_dir())
         self._thread = None

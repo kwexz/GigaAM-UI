@@ -74,6 +74,20 @@ def test_ensure_cancel(tmp_path, server):
     assert not setup.is_installed(tmp_path / "data")
 
 
+def test_platform_filter(monkeypatch, tmp_path):
+    import giga_transcribe.installer.setup as setup_mod
+    from giga_transcribe.installer.manifest import Component, Manifest
+    m = Manifest(version=1, components=(
+        Component("w", "W", "d", "1", "u", "s", 1, platforms=("win-x64",)),
+        Component("m", "M", "d", "1", "u", "s", 1, platforms=("mac-arm64",)),
+        Component("a", "A", "d", "1", "u", "s", 1),
+    ))
+    monkeypatch.setattr(setup_mod, "current_platform", lambda: "win-x64")
+    assert [s.component.id for s in setup.status(m, tmp_path)] == ["w", "a"]
+    assert [c.id for c in setup.missing(m, tmp_path)] == ["w", "a"]
+    assert setup.current_platform() in ("win-x64", "mac-arm64", "linux-x64")
+
+
 def test_ensure_archive(tmp_path, server):
     m = Manifest(version=1, components=(
         Component("pack", "Pack", "zip", "1", f"{server}/pack.zip",
