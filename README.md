@@ -1,46 +1,48 @@
 # Giga Transcribe
 
-Десктопное приложение для распознавания аудио и видео в текст.
-Локально, без облаков: модель GigaAM-v3 + Silero VAD, Windows и macOS Apple Silicon.
+> 🇷🇺 Читать на русском: [README.ru.md](README.ru.md)
 
-- 🎙️ Аудио и видео (wav, mp3, mp4, mkv и др. — всё тянет ffmpeg)
-- 📝 Субтитры на выходе: SRT, VTT, TXT, JSON
-- 🖥️ CPU везде; NVIDIA CUDA и Apple Metal (MPS) — где есть
-- 📦 Лёгкий exe/app: тяжёлый движок докачивается сам при первом запуске, по кнопке
-- 🔒 Аудио никуда не отправляется — всё считается на вашем компьютере
+Desktop app for speech-to-text on audio and video.
+Local, no cloud: GigaAM-v3 model + Silero VAD, Windows and macOS Apple Silicon.
 
-## Быстрый старт (пользователю)
+- 🎙️ Audio and video (wav, mp3, mp4, mkv and more — ffmpeg handles it all)
+- 📝 Subtitle output: SRT, VTT, TXT, JSON
+- 🖥️ CPU everywhere; NVIDIA CUDA and Apple Metal (MPS) where available
+- 📦 Light exe/app: the heavy engine downloads itself on first launch, on button press
+- 🔒 Audio never leaves your machine — everything runs locally
 
-1. Скачайте **один файл** со страницы [Releases](https://github.com/kwexz/isMemory/releases):
-   `GigaTranscribe-Windows.zip` или `GigaTranscribe-macOS.zip`.
-2. Распакуйте, запустите `giga-gui` (`giga-gui.exe` на Windows).
-3. На странице установки нажмите **«Скачать и установить»** —
-   приложение заранее покажет состав и общий размер
-   (движок ~300–400 МБ, FFmpeg, модели речи).
-4. Откройте или перетащите файл, нажмите **«Распознать»**.
+## Quick start (users)
 
-> Сборки пока без цифровой подписи: SmartScreen / Gatekeeper покажут
-> предупреждение (macOS: правый клик → Открыть).
+1. Download **one file** from [Releases](https://github.com/kwexz/isMemory/releases):
+   `GigaTranscribe-Windows.zip` or `GigaTranscribe-macOS.zip`.
+2. Unpack, run `giga-gui` (`giga-gui.exe` on Windows).
+3. On the setup page press **"Download and install"** —
+   the app shows the contents and total size up front
+   (engine ~300–400 MB, FFmpeg, speech models).
+4. Open or drag & drop a file, press **"Transcribe"**.
 
-## Как это устроено
+> Builds are not code-signed yet: SmartScreen / Gatekeeper will show
+> a warning (macOS: right-click → Open).
+
+## How it works
 
 ```mermaid
 flowchart LR
-    subgraph app["Giga Transcribe (лёгкий exe/app)"]
-        UI[PySide6: окно,\nпрогресс, текст]
-        SETUP[Setup-страница:\nкомпоненты, кнопка]
+    subgraph app["Giga Transcribe (light exe/app)"]
+        UI[PySide6: window,\nprogress, text]
+        SETUP[Setup page:\ncomponents, button]
     end
-    subgraph data["Папка данных"]
+    subgraph data["Data folder"]
         ENG[engine-*: giga-worker.exe\nPyTorch + GigaAM + Silero]
         FF[ffmpeg-*: ffmpeg]
     end
-    UI -- "первый запуск" --> SETUP
-    SETUP -- "скачать по кнопке" --> ENG
-    SETUP -- "скачать по кнопке" --> FF
+    UI -- "first launch" --> SETUP
+    SETUP -- "download on click" --> ENG
+    SETUP -- "download on click" --> FF
     UI -- "QProcess + JSONL" --> ENG
 ```
 
-Распознавание одного файла:
+Transcribing one file:
 
 ```mermaid
 sequenceDiagram
@@ -48,92 +50,92 @@ sequenceDiagram
     participant W as giga-worker
     participant V as Silero VAD
     participant G as GigaAM-v3
-    U->>W: job.json (файл, модель, устройство)
-    W->>W: ffmpeg → mono 16 кГц
-    W->>V: участки речи
-    V-->>W: N сегментов
-    loop каждый сегмент
-        W->>G: чанк ≤ 22 с
-        G-->>W: текст + таймкоды
+    U->>W: job.json (file, model, device)
+    W->>W: ffmpeg → mono 16 kHz
+    W->>V: speech regions
+    V-->>W: N segments
+    loop each segment
+        W->>G: chunk ≤ 22 s
+        G-->>W: text + timestamps
         W-->>U: {"type": "segment", ...}
     end
     W-->>U: {"type": "finished", "output": "*.srt"}
 ```
 
-## Запуск из исходников (разработчику)
+## Run from source (developers)
 
 ```bash
 python -m venv .venv && .venv/Scripts/activate   # Windows
-pip install -e .          # зависимости из pyproject.toml
-pip install pytest PySide6  # тесты и GUI
+pip install -e .          # dependencies from pyproject.toml
+pip install pytest PySide6  # tests and GUI
 
-# консоль
+# console
 PYTHONPATH=src python -m giga_transcribe "input/call.wav" --format srt
 
 # GUI
 PYTHONPATH=src python -m giga_transcribe.desktop.app
 ```
 
-Нужны: Python 3.12, ffmpeg в PATH. HF-токен **не нужен**
-(VAD — Silero, gated-моделей в тракте нет).
+Requirements: Python 3.12, ffmpeg on PATH. No HF token needed
+(VAD is Silero, no gated models in the pipeline).
 
-## Проверки
+## Checks
 
 ```bash
-PYTHONPATH=src pytest tests -q          # все тесты (моки, без модели)
-QT_QPA_PLATFORM=offscreen pytest tests/test_desktop.py  # GUI без экрана
+PYTHONPATH=src pytest tests -q          # all tests (mocks, no model)
+QT_QPA_PLATFORM=offscreen pytest tests/test_desktop.py  # headless GUI
 ```
 
-Сквозная проверка движка — `input/short.wav` (локальный файл, в репозиторий
-не коммитится): 7 сегментов, SRT побайтово стабилен между CPU/GPU.
+End-to-end engine check — `input/short.wav` (local file, never committed):
+7 segments, SRT byte-stable across CPU/GPU.
 
-## Структура
+## Layout
 
 ```mermaid
 flowchart TB
-    subgraph core["core/ — без Qt, без принтов, только колбэки"]
+    subgraph core["core/ — no Qt, no prints, callbacks only"]
         direction LR
         E[engine] --> V[vad]
         J[jobs] --> E
         F[formats: srt/vtt/txt/json]
         D[devices: cpu/cuda/mps]
     end
-    W[worker/: JSONL-консоль\nдля QProcess] --> J
-    G[desktop/: PySide6\nокно + setup] --> J
-    I[installer/: manifest,\nскачивание, setup] --> G
+    W[worker/: JSONL console\nfor QProcess] --> J
+    G[desktop/: PySide6\nwindow + setup] --> J
+    I[installer/: manifest,\ndownload, setup] --> G
 ```
 
-- `core/` — движок: загрузка модели, VAD-чанкинг, инференс, отмена между чанками.
-- `worker/` — тот же движок как отдельный процесс (JSONL по stdout).
-- `desktop/` — окно, setup-страница первого запуска, QThread/QProcess-воркеры.
-- `installer/` — манифест компонентов, докачка с resume + SHA-256, маркер установки.
-- `packaging/` — PyInstaller-спеки; `.github/workflows/release.yml` — релизы.
+- `core/` — engine: model loading, VAD chunking, inference, cancel between chunks.
+- `worker/` — same engine as a separate process (JSONL on stdout).
+- `desktop/` — window, first-run setup page, QThread/QProcess workers.
+- `installer/` — component manifest, resumable SHA-256 downloads, install marker.
+- `packaging/` — PyInstaller specs; `.github/workflows/release.yml` — releases.
 
-## Релизы и установка
+## Releases and setup
 
 ```mermaid
 flowchart LR
     TAG["git tag v*"] --> CI["GitHub Actions:\nwin-x64 + mac-arm64"]
-    CI --> B1["giga-gui-*.zip\nлёгкий UI"]
-    CI --> B2["engine-*.zip\nPyTorch + модели"]
+    CI --> B1["giga-gui-*.zip\nlight UI"]
+    CI --> B2["engine-*.zip\nPyTorch + models"]
     CI --> B3["ffmpeg-*.zip"]
-    CI --> M["manifest.json\nURL + SHA + размер"]
+    CI --> M["manifest.json\nURL + SHA + size"]
     B1 & B2 & B3 & M --> REL["GitHub Release"]
-    REL -- "пользователь качает 1 файл" --> U2[app]
-    U2 -- "setup по кнопке" --> B2 & B3
+    REL -- "user downloads 1 file" --> U2[app]
+    U2 -- "setup on click" --> B2 & B3
 ```
 
-## Приватность
+## Privacy
 
-- Аудио и транскрипты обрабатываются только локально.
-- В репозиторий не коммитятся: аудио, субтитры, токены, модели (см. `.gitignore`).
-- Папка `input/` — только локальные файлы для ручных прогонов.
+- Audio and transcripts are processed locally only.
+- Never committed: audio, subtitles, tokens, models (see `.gitignore`).
+- `input/` holds local files for manual runs only.
 
-## Статус и планы
+## Status and plans
 
-Готово: ядро, CLI, GUI, setup по кнопке, engine-паки win/mac, MPS на Apple Silicon,
-релизы v0.1.x.
+Done: core, CLI, GUI, on-click setup, win/mac engine packs, MPS on Apple Silicon,
+v0.1.x releases.
 
-Дальше: очередь файлов, CUDA engine-pack (нужно железо для проверки),
-диаризация со спикерами, автообновления.
-См. `AGENTS.md` — маршрутизация скиллов и границы архитектуры.
+Next: file queue, CUDA engine pack (needs hardware to verify),
+speaker diarization, auto-updates.
+See `AGENTS.md` — skill routing and architecture boundaries.
