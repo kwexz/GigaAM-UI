@@ -14,6 +14,7 @@ framework, no silent downloads.
 
 - `ponytail` (full): shortest working diff, stdlib first, no unrequested abstractions.
 - `HF_TOKEN` and signing certs never enter the repo; audit with `env-secrets-manager`.
+- Pre-publication leak audit (tree + `--git-history` + `--entropy`) → `secrets-scan`.
 
 ## Skill routing (load one when its branch fires)
 
