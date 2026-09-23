@@ -56,26 +56,35 @@ jobs:
           --exclude-module omegaconf --exclude-module sentencepiece
           --exclude-module silero_vad --exclude-module soundfile
           src/giga_transcribe/desktop/app.py
-      - name: Sign Windows binary (needs WIN_CERT_B64 + WIN_CERT_PASS)
-        if: runner.os == 'Windows' && secrets.WIN_CERT_B64 != ''
+      - name: Sign Windows binaries (skips without cert)
+        if: runner.os == 'Windows'
+        env:
+          WIN_CERT_B64: ${{ secrets.WIN_CERT_B64 }}
+          WIN_CERT_PASS: ${{ secrets.WIN_CERT_PASS }}
         shell: pwsh
         run: |
           # signtool ships with the Windows SDK (preinstalled on windows-latest);
           # verify the exact path against Microsoft Learn when certs arrive.
+          if ([string]::IsNullOrEmpty($env:WIN_CERT_B64)) {
+            Write-Host "no signing cert, skipping"; exit 0 }
           $pfx = "$env:RUNNER_TEMP\cert.pfx"
-          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String('${{ secrets.WIN_CERT_B64 }}'))
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:WIN_CERT_B64))
           $sdk = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin' -Directory |
             Sort-Object Name -Descending | Select-Object -First 1
           $signtool = Join-Path $sdk.FullName 'x64\signtool.exe'
-          & $signtool sign /f $pfx /p '${{ secrets.WIN_CERT_PASS }}' `
-            /tr http://timestamp.digicert.com /td sha256 /fd sha256 `
-            (Get-ChildItem dist, dist-ui -Recurse -Include *.exe).FullName
-      - name: Sign macOS binary (needs MAC_SIGN_IDENTITY)
-        if: runner.os == 'macOS' && secrets.MAC_SIGN_IDENTITY != ''
+          Get-ChildItem dist, dist-ui -Recurse -Include *.exe | ForEach-Object {
+            & $signtool sign /f $pfx /p $env:WIN_CERT_PASS `
+              /tr http://timestamp.digicert.com /td sha256 /fd sha256 $_.FullName
+          }
+      - name: Sign macOS binaries (skips without identity)
+        if: runner.os == 'macOS'
+        env:
+          MAC_SIGN_IDENTITY: ${{ secrets.MAC_SIGN_IDENTITY }}
         run: |
+          if [ -z "$MAC_SIGN_IDENTITY" ]; then echo "no identity, skipping"; exit 0; fi
           find dist dist-ui -type f -name 'giga-*' -perm +111 | while read -r b; do
             codesign --deep --force --options runtime \
-              --sign "${{ secrets.MAC_SIGN_IDENTITY }}" "$b"
+              --sign "$MAC_SIGN_IDENTITY" "$b"
           done
       - name: Pack engine + fetch ffmpeg + manifest fragment
         shell: pwsh
