@@ -130,6 +130,7 @@ flowchart LR
 - Audio and transcripts are processed locally only.
 - Never committed: audio, subtitles, tokens, models (see `.gitignore`).
 - `input/` holds local files for manual runs only.
+- Component licenses and sources: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 ## Status and plans
 

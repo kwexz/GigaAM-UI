@@ -122,9 +122,9 @@ jobs:
               [ordered]@{
                 id = $ffId
                 title = "FFmpeg ($ffId)"
-                description = "Audio/video decoding"
+                description = "Audio/video decoding, fetched from upstream"
                 version = "${{ github.ref_name }}"
-                url = "$base/$ffName"
+                url = $ffUrl
                 sha256 = (Get-FileHash $ffName -Algorithm SHA256).Hash.ToLower()
                 size = (Get-Item $ffName).Length
                 extract = $true; strip_top = $true; files = $ffFiles
@@ -132,13 +132,14 @@ jobs:
             )
           } | ConvertTo-Json -Depth 5
           Set-Content -Path "manifest-${{ matrix.pack }}.json" -Value $frag -Encoding utf8NoBOM
+      # FFmpeg archives are hashed here but NOT uploaded: the manifest
+      # points at upstream URLs, so we never redistribute GPL binaries.
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.pack }}
           path: |
             ${{ matrix.pack }}.zip
             GigaTranscribe-*.zip
-            ffmpeg-*.zip
             manifest-${{ matrix.pack }}.json
 
   publish:
