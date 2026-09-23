@@ -94,7 +94,7 @@ jobs:
           $exe = "giga-worker/giga-worker" + $(if ($isWin) { ".exe" } else { "" })
           $pack = "${{ matrix.pack }}.zip"
           Compress-Archive -Path dist/giga-worker -DestinationPath $pack
-          $gui = "giga-gui-" + $(if ($isWin) { "win-x64" } else { "mac-arm64" }) + ".zip"
+          $gui = "GigaTranscribe-" + $(if ($isWin) { "Windows" } else { "macOS" }) + ".zip"
           Compress-Archive -Path dist-ui/giga-gui -DestinationPath $gui
           if ($isWin) {
             $ffUrl = $env:FFMPEG_WIN_URL; $ffId = "ffmpeg-win-x64"
@@ -137,7 +137,7 @@ jobs:
           name: ${{ matrix.pack }}
           path: |
             ${{ matrix.pack }}.zip
-            giga-gui-*.zip
+            GigaTranscribe-*.zip
             ffmpeg-*.zip
             manifest-${{ matrix.pack }}.json
 
@@ -168,5 +168,25 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          cat > NOTES.md <<'EOF'
+          ## Что скачать (один файл)
+          | ОС | Файл |
+          |---|---|
+          | Windows 10/11 (x64) | `GigaTranscribe-Windows.zip` |
+          | macOS Apple Silicon (M1–M4) | `GigaTranscribe-macOS.zip` |
+          Остальные файлы (`engine-*`, `ffmpeg-*`) качать **не нужно** —
+          приложение докачает их само при первом запуске.
+          ## Первый запуск
+          1. Распакуйте архив в любую папку.
+          2. Запустите `giga-gui` (`giga-gui.exe` на Windows).
+          3. На странице установки нажмите «Скачать и установить» —
+             приложение покажет состав и общий размер заранее
+             (движок распознавания ~300–400 МБ, FFmpeg, модели речи).
+          4. Откройте или перетащите аудио/видео и нажмите «Распознать».
+          ## Важно
+          Сборка без цифровой подписи: Windows SmartScreen и macOS Gatekeeper
+          покажут предупреждение (macOS: правый клик → Открыть).
+          Это dev-релиз; Intel Mac и NVIDIA CUDA пока не поддерживаются.
+          EOF
           gh release create "${{ github.ref_name }}" --title "${{ github.ref_name }}" \
-            artifacts/*.zip manifest.json
+            --notes-file NOTES.md artifacts/*.zip manifest.json
