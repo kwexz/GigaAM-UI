@@ -2,7 +2,7 @@
 import os
 import time
 
-from PySide6.QtCore import QThread, QTimer, Qt, QUrl, Slot
+from PySide6.QtCore import QThread, QTimer, Qt, QUrl, Signal, Slot
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QApplication,
@@ -42,6 +42,8 @@ def _device_label(dev) -> str:
 
 
 class MainWindow(QMainWindow):
+    need_setup = Signal()  # engine missing, user wants the setup page
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Giga Transcribe")
@@ -187,10 +189,14 @@ class MainWindow(QMainWindow):
             self._timer.stop()
             self._set_running(False)
             self.progress.setVisible(False)
-            QMessageBox.warning(
+            answer = QMessageBox.question(
                 self, "Нет движка",
                 "Нейросетевой движок не установлен.\n"
-                "Перезапустите приложение и пройдите установку компонентов.")
+                "Открыть установку компонентов?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.Yes)
+            if answer == QMessageBox.StandardButton.Yes:
+                self.need_setup.emit()
             return
 
     def _wire_common(self):

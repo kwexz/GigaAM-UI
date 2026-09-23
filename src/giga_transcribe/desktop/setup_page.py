@@ -19,10 +19,12 @@ from .setup_worker import SetupWorker
 
 class SetupPage(QWidget):
     done = Signal()  # everything verified, main window may open
+    retry_requested = Signal()  # manifest fetch failed, rebuild the page
 
-    def __init__(self, manifest, target=None):
+    def __init__(self, manifest, target=None, fetch_error: str | None = None):
         super().__init__()
         self._manifest = manifest
+        self._fetch_error = fetch_error
         self._target = Path(target or data_dir())
         self._thread = None
         self._received = {}
@@ -85,6 +87,12 @@ class SetupPage(QWidget):
         self.refresh()
 
     def refresh(self):
+        if self._fetch_error is not None:
+            self.total_lbl.setText(f"Не удалось загрузить список "
+                                   f"компонентов:\n{self._fetch_error}")
+            self.go_btn.setText("Повторить")
+            self.go_btn.setEnabled(True)
+            return
         missing = setup.missing(self._manifest, self._target)
         for comp in self._manifest.components:
             state, _ = self.rows[comp.id]
@@ -109,6 +117,9 @@ class SetupPage(QWidget):
             self.refresh()
 
     def _on_start(self):
+        if self._fetch_error is not None:
+            self.retry_requested.emit()
+            return
         if not setup.missing(self._manifest, self._target):
             self.done.emit()
             return

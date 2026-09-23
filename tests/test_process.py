@@ -75,6 +75,9 @@ def test_find_engine(tmp_path):
 
 
 def test_fetch_manifest_fallback(monkeypatch):
-    assert builtin.fetch_manifest("http://127.0.0.1:9/nope", timeout=2) is None
-    monkeypatch.setattr(builtin, "fetch_manifest", lambda *a, **k: None)
-    assert builtin.default_manifest().components == ()
+    with pytest.raises(builtin.ManifestError):
+        builtin.fetch_manifest("http://127.0.0.1:9/nope", timeout=2)
+    monkeypatch.setattr(builtin, "fetch_manifest", lambda *a, **k: (_ for _ in ()).throw(
+        builtin.ManifestError("offline")))
+    manifest, err = builtin.default_manifest()
+    assert manifest.components == () and err == "offline"

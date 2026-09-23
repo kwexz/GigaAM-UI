@@ -128,6 +128,18 @@ def test_page_shows_total(qapp, tmp_path, server):
     assert page.rows["c-a"][0].text() == "Нужно скачать"
 
 
+def test_page_fetch_error_offers_retry(qapp, tmp_path):
+    from giga_transcribe.installer.manifest import Manifest
+    page = SetupPage(Manifest(), tmp_path / "data",
+                     fetch_error="cannot fetch: 404")
+    assert "Не удалось загрузить" in page.total_lbl.text()
+    assert page.go_btn.text() == "Повторить"
+    got = []
+    page.retry_requested.connect(lambda: got.append(True))
+    page._on_start()
+    assert got == [True]
+
+
 def test_worker_relays(qapp, monkeypatch, tmp_path, server):
     import giga_transcribe.installer.setup as setup_mod
 

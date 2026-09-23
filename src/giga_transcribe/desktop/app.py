@@ -13,24 +13,29 @@ from giga_transcribe.installer.state import data_dir
 def main(argv=None) -> int:
     compat.load_dotenv()
     app = QApplication(argv or sys.argv)
-    manifest = builtin.default_manifest()
+    holder = {}
 
-    if setup.is_installed():
+    def show_setup():
+        manifest, err = builtin.default_manifest()
+        page = SetupPage(manifest, data_dir(), fetch_error=err)
+        holder["page"] = page
+        page.done.connect(lambda: go_main(page))
+        page.retry_requested.connect(lambda: (page.close(), show_setup()))
+        page.show()
+
+    def go_main(page=None):
+        if page is not None:
+            page.close()
         compat.ensure_ffmpeg()
         win = MainWindow()
+        holder["win"] = win
+        win.need_setup.connect(lambda: (win.close(), show_setup()))
         win.show()
+
+    if setup.is_installed():
+        go_main()
     else:
-        page = SetupPage(manifest, data_dir())
-        holder = {}
-
-        def go_main():
-            compat.ensure_ffmpeg()
-            holder["win"] = MainWindow()
-            holder["win"].show()
-            page.close()
-
-        page.done.connect(go_main)
-        page.show()
+        show_setup()
     return app.exec()
 
 

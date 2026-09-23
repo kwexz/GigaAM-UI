@@ -28,6 +28,23 @@ def test_window_builds(qapp):
     assert "some.wav" in win.file_lbl.text()
 
 
+def test_no_engine_offers_setup(qapp, monkeypatch, tmp_path):
+    import giga_transcribe.desktop.main_window as mw_mod
+    from PySide6.QtWidgets import QMessageBox
+    monkeypatch.setattr(mw_mod, "find_engine", lambda: None)
+    monkeypatch.setattr(mw_mod.devices, "has_torch", lambda: False)
+    monkeypatch.setattr(QMessageBox, "question",
+                        lambda *a, **k: QMessageBox.StandardButton.Yes)
+    (tmp_path / "a.wav").write_bytes(b"x")
+    win = MainWindow()
+    got = []
+    win.need_setup.connect(lambda: got.append(True))
+    win.set_file(str(tmp_path / "a.wav"))
+    win._on_start()
+    assert got == [True]
+    assert not win.cancel_btn.isEnabled()
+
+
 def test_worker_relays_events(qapp, monkeypatch):
     import giga_transcribe.core.jobs as jobs_mod
 
