@@ -6,14 +6,16 @@ from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
 class Component:
-    id: str  # e.g. engine-cpu, model-gigaam-v3, ffmpeg
+    id: str  # e.g. engine-cpu-win-x64, ffmpeg-win-x64, model-gigaam-v3
     title: str  # human-readable, shown in setup UI
     description: str  # one line: what it is and why it is needed
     version: str
     url: str
     sha256: str
     size: int  # bytes, 0 if unknown
-    files: tuple = ()  # relative paths the archive must contain
+    extract: bool = False  # url is a .zip/.tar.gz to unpack into component dir
+    strip_top: bool = False  # drop first path segment (versioned top folder)
+    files: tuple = ()  # relative paths that must exist after install (required if extract)
 
 
 @dataclass
@@ -27,6 +29,10 @@ class Manifest:
             comps = tuple(Component(**c) for c in data.get("components", []))
         except TypeError as e:
             raise ValueError(f"bad manifest: {e}") from e
+        for c in comps:
+            if c.extract and not c.files:
+                raise ValueError(f"bad manifest: extract component {c.id} "
+                                 f"needs files list")
         return Manifest(version=data.get("version", 1), components=comps)
 
     @staticmethod
