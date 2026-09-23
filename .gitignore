@@ -1,0 +1,36 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+
+# Secrets — never commit
+.env
+*.pem
+*.p12
+*.pfx
+
+# Media and outputs (local only; short.srt stays as regression fixture)
+*.wav
+*.mp3
+*.mp4
+*.mkv
+*.srt
+*.vtt
+*.partial.srt
+input/*
+!input/short.srt
+
+# Model weights and HF cache
+models/
+*.bin
+*.onnx
+*.pt
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

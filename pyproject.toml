@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "giga-transcribe"
+version = "0.1.0"
+description = "Desktop audio/video transcription with GigaAM-v3 (PySide6, Win/macOS)"
+requires-python = ">=3.11"
+dependencies = [
+    "torch",
+    "torchaudio",
+    "transformers",
+    # Not used at runtime (Silero VAD), but transformers scans the remote
+    # modeling file's imports and refuses to load GigaAM without it.
+    "pyannote-audio",
+    "silero-vad",
+    "soundfile",
+    "huggingface_hub",
+    "hydra-core",
+    "omegaconf",
+    "sentencepiece",
+    "PySide6",
+]
+
+[project.scripts]
+giga-transcribe = "giga_transcribe.__main__:main"
+giga-transcribe-gui = "giga_transcribe.desktop.app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

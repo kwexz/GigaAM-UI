@@ -1,0 +1,38 @@
+# AGENTS.md — giga-transcribe
+
+Desktop app (PySide6, Windows + macOS Apple Silicon) for audio/video transcription
+with GigaAM-v3 + Silero VAD. Worker subprocess speaks JSONL over stdout; UI never
+imports torch/transformers directly.
+
+## Permanent
+
+- `ponytail` (full): shortest working diff, stdlib first, no unrequested abstractions.
+- `HF_TOKEN` and signing certs never enter the repo; audit with `env-secrets-manager`.
+
+## Skill routing (load one when its branch fires)
+
+- Qt widgets, layout, states, a11y → `qt-ui-design`.
+- PySide6 code review (finished GUI work) → `pyside6-reviewer`.
+- torch devices (cpu/cuda/mps), inference memory, serialization → `pytorch`.
+- HF download, cache, gated-repo access → `huggingface-local-models`.
+- ffprobe/ffmpeg transcode, `-progress` parsing, subprocess media errors → `ffmpeg-audio-processing`.
+- GitHub Actions matrix, artifacts, release pipeline → `github-actions`.
+- macOS notarization/Gatekeeper failures → `asc-notarization`.
+- Signing trust chain checklist → `implementing-code-signing-for-artifacts`
+  (Authenticode commands verified against Microsoft Learn).
+- Failing inference/packaging bug → `diagnosing-bugs`.
+- New behavior (formats, protocol, downloader) → `tdd` first.
+- Disputed tool behavior → `research` against primary docs.
+- Finished risky diff → `code-review`.
+
+## Out of scope
+
+- `design-taste-frontend`, web UI skills: Qt only until the web client starts.
+- `playwright`: desktop has no browser surface.
+- No new skills without asking.
+
+## Known gaps (no skill — use official docs + smoke builds)
+
+- Qt Installer Framework online repositories.
+- PySide6 + PyInstaller + torch/transformers native-lib bundling.
+- Authenticode specifics beyond the checklist.
