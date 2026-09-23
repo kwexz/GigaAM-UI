@@ -12,7 +12,7 @@ build*/
 *.p12
 *.pfx
 
-# Media and outputs (local only; short.srt stays as regression fixture)
+# Media and transcripts (may contain personal data; local only)
 *.wav
 *.mp3
 *.mp4
@@ -20,8 +20,8 @@ build*/
 *.srt
 *.vtt
 *.partial.srt
-input/*
-!input/short.srt
+# Local fixtures and manual runs (never committed)
+input/
 
 # Model weights and HF cache
 models/
