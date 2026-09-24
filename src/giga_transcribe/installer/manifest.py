@@ -17,6 +17,7 @@ class Component:
     strip_top: bool = False  # drop first path segment (versioned top folder)
     files: tuple = ()  # relative paths that must exist after install (required if extract)
     platforms: tuple = ()  # e.g. ("win-x64",); empty = any platform
+    kind: str = ""  # app | engine | ffmpeg | model; "" = any (legacy manifests)
 
 
 @dataclass

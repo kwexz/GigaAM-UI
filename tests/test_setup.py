@@ -88,6 +88,20 @@ def test_platform_filter(monkeypatch, tmp_path):
     assert setup.current_platform() in ("win-x64", "mac-arm64", "linux-x64")
 
 
+def test_page_skips_app_kind(qapp, tmp_path, server):
+    from giga_transcribe.desktop.setup_page import SetupPage
+    from giga_transcribe.installer.manifest import Component, Manifest
+    m = Manifest(version=1, components=(
+        Component("ui-w", "App", "d", "1", f"{server}/a.bin",
+                  SHA["/a.bin"], 10, kind="app"),
+        Component("e-w", "Eng", "d", "1", f"{server}/b.bin",
+                  SHA["/b.bin"], 20, kind="engine"),
+    ))
+    page = SetupPage(m, tmp_path / "data")
+    assert list(page.rows) == ["e-w"]
+    assert "20" in page.total_lbl.text()
+
+
 def test_ensure_archive(tmp_path, server):
     m = Manifest(version=1, components=(
         Component("pack", "Pack", "zip", "1", f"{server}/pack.zip",

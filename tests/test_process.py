@@ -62,16 +62,19 @@ def test_double_finish_guarded(qapp, tmp_path):
 
 
 def test_find_engine(tmp_path):
-    assert find_engine(tmp_path) is None
-    exe = tmp_path / "engine-cpu-win-x64" / "giga-worker" / "giga-worker"
+    from giga_transcribe.installer.engine import find_engine as _find
+    assert _find(tmp_path) is None
+
+
+def test_find_app(tmp_path):
+    import sys
+    from giga_transcribe.installer.engine import find_app
+    name = "giga-gui.exe" if sys.platform == "win32" else "giga-gui"
+    plat = "win-x64" if sys.platform == "win32" else "mac-arm64"
+    exe = tmp_path / f"ui-{plat}" / "giga-gui" / name
     exe.parent.mkdir(parents=True)
     exe.write_bytes(b"x")
-    import sys
-    if sys.platform == "win32":
-        exe.rename(exe.parent / "giga-worker.exe")
-        assert find_engine(tmp_path).endswith("giga-worker.exe")
-    else:
-        assert find_engine(tmp_path).endswith("giga-worker")
+    assert find_app(tmp_path).endswith(name)
 
 
 def test_find_engine_platform(tmp_path, monkeypatch):

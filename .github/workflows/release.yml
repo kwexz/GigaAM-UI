@@ -61,7 +61,7 @@ jobs:
             Where-Object { $_.Extension -in ".lib", ".pdb", ".exp" } |
             Remove-Item -Force
           Remove-Item -Path "$root/torch/include" -Recurse -Force -ErrorAction SilentlyContinue
-      - name: Build UI bundle (the light exe users download first)
+      - name: Build UI bundle (the full app, fetched by the stub)
         run: >
           pip install PySide6 &&
           pyinstaller --onedir --noconfirm --windowed --name giga-gui
@@ -72,6 +72,11 @@ jobs:
           --exclude-module omegaconf --exclude-module sentencepiece
           --exclude-module silero_vad --exclude-module soundfile
           src/giga_transcribe/desktop/app.py
+      - name: Build setup stub (tiny tkinter downloader, stdlib only)
+        run: >
+          pyinstaller --onedir --noconfirm --windowed --name giga-stub
+          --paths src --distpath dist-stub --workpath build-stub
+          src/giga_transcribe/stub/app.py
       - name: Sign Windows binaries (skips without cert)
         if: runner.os == 'Windows'
         env:
@@ -88,7 +93,7 @@ jobs:
           $sdk = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin' -Directory |
             Sort-Object Name -Descending | Select-Object -First 1
           $signtool = Join-Path $sdk.FullName 'x64\signtool.exe'
-          Get-ChildItem dist, dist-ui -Recurse -Include *.exe | ForEach-Object {
+          Get-ChildItem dist, dist-ui, dist-stub -Recurse -Include *.exe | ForEach-Object {
             & $signtool sign /f $pfx /p $env:WIN_CERT_PASS `
               /tr http://timestamp.digicert.com /td sha256 /fd sha256 $_.FullName
           }
@@ -98,7 +103,7 @@ jobs:
           MAC_SIGN_IDENTITY: ${{ secrets.MAC_SIGN_IDENTITY }}
         run: |
           if [ -z "$MAC_SIGN_IDENTITY" ]; then echo "no identity, skipping"; exit 0; fi
-          find dist dist-ui -type f -name 'giga-*' -perm +111 | while read -r b; do
+          find dist dist-ui dist-stub -type f -name 'giga-*' -perm +111 | while read -r b; do
             codesign --deep --force --options runtime \
               --sign "$MAC_SIGN_IDENTITY" "$b"
           done
@@ -112,14 +117,21 @@ jobs:
           Compress-Archive -Path dist/giga-worker -DestinationPath $pack
           $gui = "GigaTranscribe-" + $(if ($isWin) { "Windows" } else { "macOS" }) + ".zip"
           Compress-Archive -Path dist-ui/giga-gui -DestinationPath $gui
+          $stubId = "stub-" + $(if ($isWin) { "win-x64" } else { "mac-arm64" })
+          $stubZip = "GigaTranscribe-Setup-" + $(if ($isWin) { "Windows" } else { "macOS" }) + ".zip"
+          Compress-Archive -Path dist-stub/giga-stub -DestinationPath $stubZip
           if ($isWin) {
             $ffUrl = $env:FFMPEG_WIN_URL; $ffId = "ffmpeg-win-x64"
             $ffFiles = @("bin/ffmpeg.exe", "bin/ffprobe.exe")
             $plat = "win-x64"
+            $guiId = "ui-win-x64"
+            $guiExe = "giga-gui/giga-gui.exe"
           } else {
             $ffUrl = $env:FFMPEG_MAC_URL; $ffId = "ffmpeg-mac-arm64"
             $ffFiles = @("ffmpeg")
             $plat = "mac-arm64"
+            $guiId = "ui-mac-arm64"
+            $guiExe = "giga-gui/giga-gui"
           }
           $ffName = "$ffId.zip"
           Invoke-WebRequest -Uri $ffUrl -OutFile $ffName
@@ -136,7 +148,18 @@ jobs:
                 sha256 = (Get-FileHash $pack -Algorithm SHA256).Hash.ToLower()
                 size = (Get-Item $pack).Length
                 extract = $true; strip_top = $false; files = @($exe)
-                platforms = @($plat)
+                platforms = @($plat); kind = "engine"
+              },
+              [ordered]@{
+                id = $guiId
+                title = "Giga Transcribe app ($guiId)"
+                description = "Full windowed app, launched by the setup stub"
+                version = "${{ github.ref_name }}"
+                url = "$base/$gui"
+                sha256 = (Get-FileHash $gui -Algorithm SHA256).Hash.ToLower()
+                size = (Get-Item $gui).Length
+                extract = $true; strip_top = $false; files = @($guiExe)
+                platforms = @($plat); kind = "app"
               },
               [ordered]@{
                 id = $ffId
@@ -147,7 +170,7 @@ jobs:
                 sha256 = (Get-FileHash $ffName -Algorithm SHA256).Hash.ToLower()
                 size = (Get-Item $ffName).Length
                 extract = $true; strip_top = $true; files = $ffFiles
-                platforms = @($plat)
+                platforms = @($plat); kind = "ffmpeg"
               }
             )
           } | ConvertTo-Json -Depth 5
@@ -160,6 +183,7 @@ jobs:
           path: |
             ${{ matrix.pack }}.zip
             GigaTranscribe-*.zip
+            GigaTranscribe-Setup-*.zip
             manifest-${{ matrix.pack }}.json
 
   publish:
@@ -190,20 +214,19 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cat > NOTES.md <<'EOF'
-          ## Что скачать (один файл)
+          ## Что скачать (один маленький файл)
           | ОС | Файл |
           |---|---|
-          | Windows 10/11 (x64) | `GigaTranscribe-Windows.zip` |
-          | macOS Apple Silicon (M1–M4) | `GigaTranscribe-macOS.zip` |
-          Остальные файлы (`engine-*`, `ffmpeg-*`) качать **не нужно** —
-          приложение докачает их само при первом запуске.
+          | Windows 10/11 (x64) | `GigaTranscribe-Setup-Windows.zip` (~20 МБ) |
+          | macOS Apple Silicon (M1–M4) | `GigaTranscribe-Setup-macOS.zip` (~20 МБ) |
+          Остальные файлы качать **не нужно**.
           ## Первый запуск
-          1. Распакуйте архив в любую папку.
-          2. Запустите `giga-gui` (`giga-gui.exe` на Windows).
-          3. На странице установки нажмите «Скачать и установить» —
-             приложение покажет состав и общий размер заранее
-             (движок распознавания ~300–400 МБ, FFmpeg, модели речи).
-          4. Откройте или перетащите аудио/видео и нажмите «Распознать».
+          1. Распакуйте архив, запустите установщик.
+          2. Нажмите «Скачать и установить» — приложение заранее покажет
+             состав и общий размер (программа, движок ~150–400 МБ,
+             FFmpeg, модели речи).
+          3. После установки нажмите «Запустить», откройте или перетащите
+             аудио/видео и нажмите «Распознать».
           ## Важно
           Сборка без цифровой подписи: Windows SmartScreen и macOS Gatekeeper
           покажут предупреждение (macOS: правый клик → Открыть).

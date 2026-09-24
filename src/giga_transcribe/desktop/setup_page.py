@@ -23,7 +23,12 @@ class SetupPage(QWidget):
 
     def __init__(self, manifest, target=None, fetch_error: str | None = None):
         super().__init__()
-        self._manifest = setup.for_this_platform(manifest)
+        # The full app never offers to download itself.
+        manifest = setup.Manifest(
+            version=manifest.version,
+            components=tuple(c for c in setup.for_this_platform(manifest).components
+                             if c.kind != "app"))
+        self._manifest = manifest
         self._fetch_error = fetch_error
         self._target = Path(target or data_dir())
         self._thread = None
