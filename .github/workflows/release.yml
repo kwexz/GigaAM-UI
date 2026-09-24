@@ -56,7 +56,7 @@ jobs:
           # PyInstaller hauls torch's 2+ GB of .lib link-libraries and headers:
           # useless at runtime. NOTE: -Include is silently ignored with
           # -LiteralPath on PS 5.1, hence Where-Object (deletes must filter!).
-          $root = "dist/giga-worker/_internal"
+          $root = "dist/GigaAM-Worker/_internal"
           Get-ChildItem -Path $root -Recurse -File |
             Where-Object { $_.Extension -in ".lib", ".pdb", ".exp" } |
             Remove-Item -Force
