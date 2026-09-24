@@ -13,13 +13,14 @@ Local, no cloud: GigaAM-v3 model + Silero VAD, Windows and macOS Apple Silicon.
 
 ## Quick start (users)
 
-1. Download **one file** from [Releases](https://github.com/kwexz/isMemory/releases):
-   `GigaTranscribe-Windows.zip` or `GigaTranscribe-macOS.zip`.
-2. Unpack, run `giga-gui` (`giga-gui.exe` on Windows).
-3. On the setup page press **"Download and install"** —
-   the app shows the contents and total size up front
-   (engine ~300–400 MB, FFmpeg, speech models).
-4. Open or drag & drop a file, press **"Transcribe"**.
+1. Download the tiny setup stub from [Releases](https://github.com/kwexz/isMemory/releases):
+   `GigaTranscribe-Setup-Windows.zip` or `GigaTranscribe-Setup-macOS.zip` (~12 MB).
+2. Unpack, run the stub, press **"Download and install"** —
+   it shows contents and total size up front, then offers **"Launch"**.
+3. Open or drag & drop a file, press **"Transcribe"**.
+
+Prefer manual setup? `GigaTranscribe-Windows.zip` / `-macOS.zip` holds the full
+app (`GigaAM-UI`) with its own setup page for engine + FFmpeg.
 
 > Builds are not code-signed yet: SmartScreen / Gatekeeper will show
 > a warning (macOS: right-click → Open).
@@ -28,17 +29,20 @@ Local, no cloud: GigaAM-v3 model + Silero VAD, Windows and macOS Apple Silicon.
 
 ```mermaid
 flowchart LR
-    subgraph app["Giga Transcribe (light exe/app)"]
-        UI[PySide6: window,\nprogress, text]
-        SETUP[Setup page:\ncomponents, button]
+    subgraph stub["Setup stub (~12 MB)"]
+        S[list + total + button]
+    end
+    subgraph app["GigaAM-UI (full app)"]
+        UI[window,\nprogress, text]
     end
     subgraph data["Data folder"]
-        ENG[engine-*: giga-worker.exe\nPyTorch + GigaAM + Silero]
+        ENG[engine-*: GigaAM-Worker\nPyTorch + GigaAM + Silero]
         FF[ffmpeg-*: ffmpeg]
     end
-    UI -- "first launch" --> SETUP
-    SETUP -- "download on click" --> ENG
-    SETUP -- "download on click" --> FF
+    S -- "download on click" --> UI
+    S -- "download on click" --> ENG
+    S -- "download on click" --> FF
+    S -- "Launch" --> UI
     UI -- "QProcess + JSONL" --> ENG
 ```
 
@@ -47,7 +51,7 @@ Transcribing one file:
 ```mermaid
 sequenceDiagram
     participant U as UI
-    participant W as giga-worker
+    participant W as GigaAM-Worker
     participant V as Silero VAD
     participant G as GigaAM-v3
     U->>W: job.json (file, model, device)
@@ -116,13 +120,14 @@ flowchart TB
 ```mermaid
 flowchart LR
     TAG["git tag v*"] --> CI["GitHub Actions:\nwin-x64 + mac-arm64"]
-    CI --> B1["giga-gui-*.zip\nlight UI"]
+    CI --> S0["Setup stub zips\n~12 MB"]
+    CI --> B1["GigaAM-UI zips\nfull app"]
     CI --> B2["engine-*.zip\nPyTorch + models"]
-    CI --> B3["ffmpeg-*.zip"]
+    CI --> B3["ffmpeg URLs\npinned, not mirrored"]
     CI --> M["manifest.json\nURL + SHA + size"]
-    B1 & B2 & B3 & M --> REL["GitHub Release"]
-    REL -- "user downloads 1 file" --> U2[app]
-    U2 -- "setup on click" --> B2 & B3
+    S0 & B1 & B2 & M --> REL["GitHub Release"]
+    REL -- "user downloads stub" --> ST[stub]
+    ST -- "setup on click" --> B1 & B2 & B3
 ```
 
 ## Privacy

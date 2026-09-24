@@ -13,13 +13,14 @@
 
 ## Быстрый старт (пользователю)
 
-1. Скачайте **один файл** со страницы [Releases](https://github.com/kwexz/isMemory/releases):
-   `GigaTranscribe-Windows.zip` или `GigaTranscribe-macOS.zip`.
-2. Распакуйте, запустите `giga-gui` (`giga-gui.exe` на Windows).
-3. На странице установки нажмите **«Скачать и установить»** —
-   приложение заранее покажет состав и общий размер
-   (движок ~300–400 МБ, FFmpeg, модели речи).
-4. Откройте или перетащите файл, нажмите **«Распознать»**.
+1. Скачайте крошечный установщик со страницы [Releases](https://github.com/kwexz/isMemory/releases):
+   `GigaTranscribe-Setup-Windows.zip` или `GigaTranscribe-Setup-macOS.zip` (~12 МБ).
+2. Распакуйте, запустите, нажмите **«Скачать и установить»**,
+   затем **«Запустить»**.
+3. Откройте или перетащите файл, нажмите **«Распознать»**.
+
+Нужна ручная установка? `GigaTranscribe-Windows.zip` / `-macOS.zip` — полное
+приложение (`GigaAM-UI`) со своей setup-страницей для движка и FFmpeg.
 
 > Сборки пока без цифровой подписи: SmartScreen / Gatekeeper покажут
 > предупреждение (macOS: правый клик → Открыть).
@@ -28,17 +29,20 @@
 
 ```mermaid
 flowchart LR
-    subgraph app["Giga Transcribe (лёгкий exe/app)"]
-        UI[PySide6: окно,\nпрогресс, текст]
-        SETUP[Setup-страница:\nкомпоненты, кнопка]
+    subgraph stub["Стаб-установщик (~12 МБ)"]
+        S[список + итог + кнопка]
+    end
+    subgraph app["GigaAM-UI (полное приложение)"]
+        UI[окно,\nпрогресс, текст]
     end
     subgraph data["Папка данных"]
-        ENG[engine-*: giga-worker.exe\nPyTorch + GigaAM + Silero]
+        ENG[engine-*: GigaAM-Worker\nPyTorch + GigaAM + Silero]
         FF[ffmpeg-*: ffmpeg]
     end
-    UI -- "первый запуск" --> SETUP
-    SETUP -- "скачать по кнопке" --> ENG
-    SETUP -- "скачать по кнопке" --> FF
+    S -- "скачать по кнопке" --> UI
+    S -- "скачать по кнопке" --> ENG
+    S -- "скачать по кнопке" --> FF
+    S -- "Запустить" --> UI
     UI -- "QProcess + JSONL" --> ENG
 ```
 
@@ -47,7 +51,7 @@ flowchart LR
 ```mermaid
 sequenceDiagram
     participant U as UI
-    participant W as giga-worker
+    participant W as GigaAM-Worker
     participant V as Silero VAD
     participant G as GigaAM-v3
     U->>W: job.json (файл, модель, устройство)
@@ -116,13 +120,14 @@ flowchart TB
 ```mermaid
 flowchart LR
     TAG["git tag v*"] --> CI["GitHub Actions:\nwin-x64 + mac-arm64"]
-    CI --> B1["giga-gui-*.zip\nлёгкий UI"]
+    CI --> S0["стаб-зипы\n~12 МБ"]
+    CI --> B1["зипы GigaAM-UI\nполное приложение"]
     CI --> B2["engine-*.zip\nPyTorch + модели"]
-    CI --> B3["ffmpeg-*.zip"]
+    CI --> B3["URL ffmpeg\nпин, без зеркала"]
     CI --> M["manifest.json\nURL + SHA + размер"]
-    B1 & B2 & B3 & M --> REL["GitHub Release"]
-    REL -- "пользователь качает 1 файл" --> U2[app]
-    U2 -- "setup по кнопке" --> B2 & B3
+    S0 & B1 & B2 & M --> REL["GitHub Release"]
+    REL -- "пользователь качает стаб" --> ST[stub]
+    ST -- "setup по кнопке" --> B1 & B2 & B3
 ```
 
 ## Приватность

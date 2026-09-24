@@ -6,9 +6,9 @@ from .setup import current_platform
 from .state import data_dir
 
 
-def _exe_name() -> str:
-    import sys
-    return "giga-worker.exe" if sys.platform == "win32" else "giga-worker"
+def _exe_name(kind: str) -> str:
+    ext = ".exe" if sys.platform == "win32" else ""
+    return f"{kind}{ext}"
 
 
 def find_engine(target: Path | None = None) -> str | None:
@@ -17,8 +17,8 @@ def find_engine(target: Path | None = None) -> str | None:
     if not base.is_dir():
         return None
     plat = current_platform()
-    name = _exe_name()
-    for c in sorted(base.glob("engine-*/giga-worker/giga-worker*")):
+    name = _exe_name("GigaAM-Worker")
+    for c in sorted(base.glob("engine-*/GigaAM-Worker/GigaAM-Worker*")):
         if plat in c.parent.parent.name and c.name == name and c.is_file():
             return str(c)
     return None
@@ -30,8 +30,8 @@ def find_app(target: Path | None = None) -> str | None:
     if not base.is_dir():
         return None
     plat = current_platform()
-    name = "giga-gui.exe" if sys.platform == "win32" else "giga-gui"
-    for c in sorted(base.glob("ui-*/giga-gui/giga-gui*")):
+    name = _exe_name("GigaAM-UI")
+    for c in sorted(base.glob("ui-*/GigaAM-UI/GigaAM-UI*")):
         if plat in c.parent.parent.name and c.name == name and c.is_file():
             return str(c)
     return None

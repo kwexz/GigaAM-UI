@@ -15,6 +15,11 @@ from giga_transcribe.installer.engine import find_app, find_engine
 from giga_transcribe.installer.state import data_dir
 
 
+def pick_launch_target(target=None) -> str | None:
+    """Full UI first, engine console as fallback, else None."""
+    return find_app(target) or find_engine(target)
+
+
 class StubApp:
     def __init__(self, root, manifest, fetch_error=None, target=None):
         self.root = root
@@ -156,7 +161,7 @@ class StubApp:
                 messagebox.showerror("Ошибка загрузки", message)
 
     def _launch(self):
-        exe = find_app(self.target) or find_engine(self.target)
+        exe = pick_launch_target(self.target)
         if exe is None:
             messagebox.showerror("Нет приложения",
                                  "Не найден установленный компонент.")

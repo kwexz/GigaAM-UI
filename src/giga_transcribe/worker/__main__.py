@@ -1,4 +1,4 @@
-"""giga-worker: `python -m giga_transcribe.worker --job job.json`.
+"""GigaAM-Worker: `python -m giga_transcribe.worker --job job.json`.
 
 Protocol (v1, one JSON object per stdout line):
   {"type": "stage", "name": "loading_model" | "transcribing"}

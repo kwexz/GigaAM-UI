@@ -66,12 +66,29 @@ def test_find_engine(tmp_path):
     assert _find(tmp_path) is None
 
 
+def test_pick_launch_target_prefers_app(tmp_path):
+    import sys
+    from giga_transcribe.stub.app import pick_launch_target
+    assert pick_launch_target(tmp_path) is None
+    app_name = "GigaAM-UI.exe" if sys.platform == "win32" else "GigaAM-UI"
+    eng_name = "GigaAM-Worker.exe" if sys.platform == "win32" else "GigaAM-Worker"
+    plat = "win-x64" if sys.platform == "win32" else "mac-arm64"
+    eng = tmp_path / f"engine-cpu-{plat}" / "GigaAM-Worker" / eng_name
+    eng.parent.mkdir(parents=True)
+    eng.write_bytes(b"x")
+    assert pick_launch_target(tmp_path).endswith(eng_name)
+    app = tmp_path / f"ui-{plat}" / "GigaAM-UI" / app_name
+    app.parent.mkdir(parents=True)
+    app.write_bytes(b"x")
+    assert pick_launch_target(tmp_path).endswith(app_name)
+
+
 def test_find_app(tmp_path):
     import sys
     from giga_transcribe.installer.engine import find_app
-    name = "giga-gui.exe" if sys.platform == "win32" else "giga-gui"
+    name = "GigaAM-UI.exe" if sys.platform == "win32" else "GigaAM-UI"
     plat = "win-x64" if sys.platform == "win32" else "mac-arm64"
-    exe = tmp_path / f"ui-{plat}" / "giga-gui" / name
+    exe = tmp_path / f"ui-{plat}" / "GigaAM-UI" / name
     exe.parent.mkdir(parents=True)
     exe.write_bytes(b"x")
     assert find_app(tmp_path).endswith(name)
@@ -79,16 +96,16 @@ def test_find_app(tmp_path):
 
 def test_find_engine_platform(tmp_path, monkeypatch):
     import giga_transcribe.installer.engine as eng_mod
-    for d, exe in (("engine-cpu-win-x64", "giga-worker.exe"),
-                   ("engine-cpu-mac-arm64", "giga-worker")):
-        p = tmp_path / d / "giga-worker" / exe
+    for d, exe in (("engine-cpu-win-x64", "GigaAM-Worker.exe"),
+                   ("engine-cpu-mac-arm64", "GigaAM-Worker")):
+        p = tmp_path / d / "GigaAM-Worker" / exe
         p.parent.mkdir(parents=True)
         p.write_bytes(b"x")
-    monkeypatch.setattr(eng_mod, "_exe_name", lambda: "giga-worker.exe")
+    monkeypatch.setattr(eng_mod, "_exe_name", lambda kind: "GigaAM-Worker.exe")
     monkeypatch.setattr(eng_mod, "current_platform", lambda: "win-x64")
     assert "engine-cpu-win-x64" in find_engine(tmp_path)
     monkeypatch.setattr(eng_mod, "current_platform", lambda: "mac-arm64")
-    monkeypatch.setattr(eng_mod, "_exe_name", lambda: "giga-worker")
+    monkeypatch.setattr(eng_mod, "_exe_name", lambda kind: "GigaAM-Worker")
     assert "engine-cpu-mac-arm64" in find_engine(tmp_path)
 
 

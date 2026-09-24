@@ -15,6 +15,9 @@ framework, no silent downloads.
 - `ponytail` (full): shortest working diff, stdlib first, no unrequested abstractions.
 - `HF_TOKEN` and signing certs never enter the repo; audit with `env-secrets-manager`.
 - Pre-publication leak audit (tree + `--git-history` + `--entropy`) → `secrets-scan`.
+- Docs sync: any user-facing change (binary names, setup flow, formats, devices)
+  updates README.md + README.ru.md + the release NOTES template in
+  `.github/workflows/release.yml` in the same diff. Release notes in English.
 
 ## Skill routing (load one when its branch fires)
 

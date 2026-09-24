@@ -1,4 +1,4 @@
-"""QProcess worker over a downloaded engine bundle (giga-worker exe).
+"""QProcess worker over a downloaded engine bundle (GigaAM-Worker exe).
 
 Same signals as TranscribeWorker, so MainWindow treats both identically.
 stdout must be pure JSONL (worker protocol v1); anything else is an error.

@@ -35,7 +35,7 @@ jobs:
           omegaconf sentencepiece
       - name: Build worker bundle
         run: >
-          pyinstaller --onedir --noconfirm --console --name giga-worker
+          pyinstaller --onedir --noconfirm --console --name GigaAM-Worker
           --paths src --distpath dist --workpath build
           --collect-all torch --collect-all torchaudio
           --collect-all transformers --collect-all tokenizers
@@ -64,7 +64,7 @@ jobs:
       - name: Build UI bundle (the full app, fetched by the stub)
         run: >
           pip install PySide6 &&
-          pyinstaller --onedir --noconfirm --windowed --name giga-gui
+          pyinstaller --onedir --noconfirm --windowed --name GigaAM-UI
           --paths src --distpath dist-ui --workpath build-ui
           --exclude-module torch --exclude-module torchaudio
           --exclude-module transformers --exclude-module tokenizers
@@ -74,7 +74,7 @@ jobs:
           src/giga_transcribe/desktop/app.py
       - name: Build setup stub (tiny tkinter downloader, stdlib only)
         run: >
-          pyinstaller --onedir --noconfirm --windowed --name giga-stub
+          pyinstaller --onedir --noconfirm --windowed --name GigaTranscribe-Setup
           --paths src --distpath dist-stub --workpath build-stub
           src/giga_transcribe/stub/app.py
       - name: Sign Windows binaries (skips without cert)
@@ -103,7 +103,7 @@ jobs:
           MAC_SIGN_IDENTITY: ${{ secrets.MAC_SIGN_IDENTITY }}
         run: |
           if [ -z "$MAC_SIGN_IDENTITY" ]; then echo "no identity, skipping"; exit 0; fi
-          find dist dist-ui dist-stub -type f -name 'giga-*' -perm +111 | while read -r b; do
+          find dist dist-ui dist-stub -type f \( -name 'GigaAM-*' -o -name 'GigaTranscribe-*' \) -perm +111 | while read -r b; do
             codesign --deep --force --options runtime \
               --sign "$MAC_SIGN_IDENTITY" "$b"
           done
@@ -112,26 +112,26 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $isWin = "${{ runner.os }}" -eq "Windows"
-          $exe = "giga-worker/giga-worker" + $(if ($isWin) { ".exe" } else { "" })
+          $exe = "GigaAM-Worker/GigaAM-Worker" + $(if ($isWin) { ".exe" } else { "" })
           $pack = "${{ matrix.pack }}.zip"
-          Compress-Archive -Path dist/giga-worker -DestinationPath $pack
+          Compress-Archive -Path dist/GigaAM-Worker -DestinationPath $pack
           $gui = "GigaTranscribe-" + $(if ($isWin) { "Windows" } else { "macOS" }) + ".zip"
-          Compress-Archive -Path dist-ui/giga-gui -DestinationPath $gui
+          Compress-Archive -Path dist-ui/GigaAM-UI -DestinationPath $gui
           $stubId = "stub-" + $(if ($isWin) { "win-x64" } else { "mac-arm64" })
           $stubZip = "GigaTranscribe-Setup-" + $(if ($isWin) { "Windows" } else { "macOS" }) + ".zip"
-          Compress-Archive -Path dist-stub/giga-stub -DestinationPath $stubZip
+          Compress-Archive -Path dist-stub/GigaTranscribe-Setup -DestinationPath $stubZip
           if ($isWin) {
             $ffUrl = $env:FFMPEG_WIN_URL; $ffId = "ffmpeg-win-x64"
             $ffFiles = @("bin/ffmpeg.exe", "bin/ffprobe.exe")
             $plat = "win-x64"
             $guiId = "ui-win-x64"
-            $guiExe = "giga-gui/giga-gui.exe"
+            $guiExe = "GigaAM-UI/GigaAM-UI.exe"
           } else {
             $ffUrl = $env:FFMPEG_MAC_URL; $ffId = "ffmpeg-mac-arm64"
             $ffFiles = @("ffmpeg")
             $plat = "mac-arm64"
             $guiId = "ui-mac-arm64"
-            $guiExe = "giga-gui/giga-gui"
+            $guiExe = "GigaAM-UI/GigaAM-UI"
           }
           $ffName = "$ffId.zip"
           Invoke-WebRequest -Uri $ffUrl -OutFile $ffName
@@ -214,23 +214,23 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cat > NOTES.md <<'EOF'
-          ## Что скачать (один маленький файл)
-          | ОС | Файл |
+          ## What to download (one small file)
+          | OS | File |
           |---|---|
-          | Windows 10/11 (x64) | `GigaTranscribe-Setup-Windows.zip` (~20 МБ) |
-          | macOS Apple Silicon (M1–M4) | `GigaTranscribe-Setup-macOS.zip` (~20 МБ) |
-          Остальные файлы качать **не нужно**.
-          ## Первый запуск
-          1. Распакуйте архив, запустите установщик.
-          2. Нажмите «Скачать и установить» — приложение заранее покажет
-             состав и общий размер (программа, движок ~150–400 МБ,
-             FFmpeg, модели речи).
-          3. После установки нажмите «Запустить», откройте или перетащите
-             аудио/видео и нажмите «Распознать».
-          ## Важно
-          Сборка без цифровой подписи: Windows SmartScreen и macOS Gatekeeper
-          покажут предупреждение (macOS: правый клик → Открыть).
-          Это dev-релиз; Intel Mac и NVIDIA CUDA пока не поддерживаются.
+          | Windows 10/11 (x64) | `GigaTranscribe-Setup-Windows.zip` (~12 MB) |
+          | macOS Apple Silicon (M1–M4) | `GigaTranscribe-Setup-macOS.zip` (~15 MB) |
+          Do **not** download anything else.
+          ## First launch
+          1. Unpack the archive, run the setup stub.
+          2. Press "Download and install" — the app shows contents and total
+             size up front (full app, engine ~150–400 MB, FFmpeg, speech models).
+          3. Press "Launch", open or drag & drop audio/video, press Transcribe.
+          Full app zips (`GigaTranscribe-Windows.zip` / `-macOS.zip`) are also
+          attached for manual setup.
+          ## Note
+          Unsigned dev builds: Windows SmartScreen and macOS Gatekeeper will
+          warn (macOS: right-click → Open). Intel Mac and NVIDIA CUDA are not
+          supported yet.
           EOF
           gh release create "${{ github.ref_name }}" --title "${{ github.ref_name }}" \
             --notes-file NOTES.md artifacts/*.zip manifest.json
