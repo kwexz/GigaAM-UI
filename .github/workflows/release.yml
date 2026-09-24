@@ -49,7 +49,7 @@ jobs:
           --exclude-module grpc --exclude-module google
           --exclude-module scipy --exclude-module tkinter
           --exclude-module pydoc
-          src/giga_transcribe/worker/__main__.py
+          src/gigaam_ui/worker/__main__.py
       - name: Prune dead weight (static libs, headers)
         shell: pwsh
         run: |
@@ -71,12 +71,12 @@ jobs:
           --exclude-module huggingface_hub --exclude-module hydra
           --exclude-module omegaconf --exclude-module sentencepiece
           --exclude-module silero_vad --exclude-module soundfile
-          src/giga_transcribe/desktop/app.py
+          src/gigaam_ui/desktop/app.py
       - name: Build setup stub (tiny tkinter downloader, stdlib only)
         run: >
-          pyinstaller --onedir --noconfirm --windowed --name GigaTranscribe-Setup
+          pyinstaller --onedir --noconfirm --windowed --name GigaAM-UI-Setup
           --paths src --distpath dist-stub --workpath build-stub
-          src/giga_transcribe/stub/app.py
+          src/gigaam_ui/stub/app.py
       - name: Sign Windows binaries (skips without cert)
         if: runner.os == 'Windows'
         env:
@@ -103,7 +103,7 @@ jobs:
           MAC_SIGN_IDENTITY: ${{ secrets.MAC_SIGN_IDENTITY }}
         run: |
           if [ -z "$MAC_SIGN_IDENTITY" ]; then echo "no identity, skipping"; exit 0; fi
-          find dist dist-ui dist-stub -type f \( -name 'GigaAM-*' -o -name 'GigaTranscribe-*' \) -perm +111 | while read -r b; do
+          find dist dist-ui dist-stub -type f -name 'GigaAM-*' -perm +111 | while read -r b; do
             codesign --deep --force --options runtime \
               --sign "$MAC_SIGN_IDENTITY" "$b"
           done
@@ -115,11 +115,11 @@ jobs:
           $exe = "GigaAM-Worker/GigaAM-Worker" + $(if ($isWin) { ".exe" } else { "" })
           $pack = "${{ matrix.pack }}.zip"
           Compress-Archive -Path dist/GigaAM-Worker -DestinationPath $pack
-          $gui = "GigaTranscribe-" + $(if ($isWin) { "Windows" } else { "macOS" }) + ".zip"
+          $gui = "GigaAM-UI-" + $(if ($isWin) { "Windows" } else { "macOS" }) + ".zip"
           Compress-Archive -Path dist-ui/GigaAM-UI -DestinationPath $gui
           $stubId = "stub-" + $(if ($isWin) { "win-x64" } else { "mac-arm64" })
-          $stubZip = "GigaTranscribe-Setup-" + $(if ($isWin) { "Windows" } else { "macOS" }) + ".zip"
-          Compress-Archive -Path dist-stub/GigaTranscribe-Setup -DestinationPath $stubZip
+          $stubZip = "GigaAM-UI-Setup-" + $(if ($isWin) { "Windows" } else { "macOS" }) + ".zip"
+          Compress-Archive -Path dist-stub/GigaAM-UI-Setup -DestinationPath $stubZip
           if ($isWin) {
             $ffUrl = $env:FFMPEG_WIN_URL; $ffId = "ffmpeg-win-x64"
             $ffFiles = @("bin/ffmpeg.exe", "bin/ffprobe.exe")
@@ -152,7 +152,7 @@ jobs:
               },
               [ordered]@{
                 id = $guiId
-                title = "Giga Transcribe app ($guiId)"
+                title = "GigaAM-UI app ($guiId)"
                 description = "Full windowed app, launched by the setup stub"
                 version = "${{ github.ref_name }}"
                 url = "$base/$gui"
@@ -182,8 +182,7 @@ jobs:
           name: ${{ matrix.pack }}
           path: |
             ${{ matrix.pack }}.zip
-            GigaTranscribe-*.zip
-            GigaTranscribe-Setup-*.zip
+            GigaAM-UI-*.zip
             manifest-${{ matrix.pack }}.json
 
   publish:
@@ -217,15 +216,15 @@ jobs:
           ## What to download (one small file)
           | OS | File |
           |---|---|
-          | Windows 10/11 (x64) | `GigaTranscribe-Setup-Windows.zip` (~12 MB) |
-          | macOS Apple Silicon (M1–M4) | `GigaTranscribe-Setup-macOS.zip` (~15 MB) |
+          | Windows 10/11 (x64) | `GigaAM-UI-Setup-Windows.zip` (~12 MB) |
+          | macOS Apple Silicon (M1–M4) | `GigaAM-UI-Setup-macOS.zip` (~15 MB) |
           Do **not** download anything else.
           ## First launch
           1. Unpack the archive, run the setup stub.
           2. Press "Download and install" — the app shows contents and total
              size up front (full app, engine ~150–400 MB, FFmpeg, speech models).
           3. Press "Launch", open or drag & drop audio/video, press Transcribe.
-          Full app zips (`GigaTranscribe-Windows.zip` / `-macOS.zip`) are also
+          Full app zips (`GigaAM-UI-Windows.zip` / `-macOS.zip`) are also
           attached for manual setup.
           ## Note
           Unsigned dev builds: Windows SmartScreen and macOS Gatekeeper will

@@ -11,10 +11,10 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import pytest
 from PySide6.QtWidgets import QApplication
 
-from giga_transcribe.desktop.setup_page import SetupPage
-from giga_transcribe.desktop.setup_worker import SetupWorker
-from giga_transcribe.installer import downloads, setup
-from giga_transcribe.installer.manifest import Component, Manifest
+from gigaam_ui.desktop.setup_page import SetupPage
+from gigaam_ui.desktop.setup_worker import SetupWorker
+from gigaam_ui.installer import downloads, setup
+from gigaam_ui.installer.manifest import Component, Manifest
 
 FILES = {"/a.bin": b"A" * 50000, "/b.bin": b"B" * 30000}
 SHA = {p: hashlib.sha256(b).hexdigest() for p, b in FILES.items()}
@@ -75,8 +75,8 @@ def test_ensure_cancel(tmp_path, server):
 
 
 def test_platform_filter(monkeypatch, tmp_path):
-    import giga_transcribe.installer.setup as setup_mod
-    from giga_transcribe.installer.manifest import Component, Manifest
+    import gigaam_ui.installer.setup as setup_mod
+    from gigaam_ui.installer.manifest import Component, Manifest
     m = Manifest(version=1, components=(
         Component("w", "W", "d", "1", "u", "s", 1, platforms=("win-x64",)),
         Component("m", "M", "d", "1", "u", "s", 1, platforms=("mac-arm64",)),
@@ -89,8 +89,8 @@ def test_platform_filter(monkeypatch, tmp_path):
 
 
 def test_page_skips_app_kind(qapp, tmp_path, server):
-    from giga_transcribe.desktop.setup_page import SetupPage
-    from giga_transcribe.installer.manifest import Component, Manifest
+    from gigaam_ui.desktop.setup_page import SetupPage
+    from gigaam_ui.installer.manifest import Component, Manifest
     m = Manifest(version=1, components=(
         Component("ui-w", "App", "d", "1", f"{server}/a.bin",
                   SHA["/a.bin"], 10, kind="app"),
@@ -157,7 +157,7 @@ def test_page_shows_total(qapp, tmp_path, server):
 
 
 def test_page_fetch_error_offers_retry(qapp, tmp_path):
-    from giga_transcribe.installer.manifest import Manifest
+    from gigaam_ui.installer.manifest import Manifest
     page = SetupPage(Manifest(), tmp_path / "data",
                      fetch_error="cannot fetch: 404")
     assert "Не удалось загрузить" in page.total_lbl.text()
@@ -169,7 +169,7 @@ def test_page_fetch_error_offers_retry(qapp, tmp_path):
 
 
 def test_worker_relays(qapp, monkeypatch, tmp_path, server):
-    import giga_transcribe.installer.setup as setup_mod
+    import gigaam_ui.installer.setup as setup_mod
 
     m = make_manifest(server)
 

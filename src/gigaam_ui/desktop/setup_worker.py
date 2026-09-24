@@ -28,8 +28,8 @@ class SetupWorker(QObject):
 
     @Slot()
     def run(self):
-        from giga_transcribe.installer import setup
-        from giga_transcribe.installer.downloads import Cancelled, DownloadError
+        from gigaam_ui.installer import setup
+        from gigaam_ui.installer.downloads import Cancelled, DownloadError
         try:
             fetched = setup.ensure(
                 self._manifest, self._target,

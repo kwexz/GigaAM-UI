@@ -1,7 +1,7 @@
 """tune_cpu_threads: repair broken single-thread default, keep sane ones."""
 import sys
 
-from giga_transcribe.core import engine
+from gigaam_ui.core import engine
 
 
 def test_bumps_single_thread(monkeypatch):

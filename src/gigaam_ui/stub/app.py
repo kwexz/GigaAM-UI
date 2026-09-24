@@ -1,4 +1,4 @@
-"""GigaTranscribe stub: ~20 MB window that fetches everything else.
+"""GigaAM-UI setup stub: tiny window that fetches everything else.
 
 Reuses installer/ modules (stdlib-only by design). Threading: the worker
 thread pushes events into a queue; the UI polls it via after().
@@ -10,9 +10,9 @@ import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
-from giga_transcribe.installer import builtin, setup
-from giga_transcribe.installer.engine import find_app, find_engine
-from giga_transcribe.installer.state import data_dir
+from gigaam_ui.installer import builtin, setup
+from gigaam_ui.installer.engine import find_app, find_engine
+from gigaam_ui.installer.state import data_dir
 
 
 def pick_launch_target(target=None) -> str | None:
@@ -23,7 +23,7 @@ def pick_launch_target(target=None) -> str | None:
 class StubApp:
     def __init__(self, root, manifest, fetch_error=None, target=None):
         self.root = root
-        self.root.title("Giga Transcribe — установка")
+        self.root.title("GigaAM-UI — установка")
         self.root.geometry("520x560")
         self.manifest = manifest
         self.target = target or data_dir()
@@ -32,7 +32,7 @@ class StubApp:
         self.received = {}
         self.total_bytes = 1
 
-        ttk.Label(root, text="Установка Giga Transcribe",
+        ttk.Label(root, text="Установка GigaAM-UI",
                   font=("", 14, "bold")).pack(pady=8, anchor="w", padx=10)
 
         if fetch_error is not None:

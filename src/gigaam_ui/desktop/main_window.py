@@ -19,10 +19,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from giga_transcribe.core import devices, formats, models
-from giga_transcribe.core.events import Job, default_output
-from giga_transcribe.desktop.worker import TranscribeWorker
-from giga_transcribe.installer.engine import find_engine
+from gigaam_ui.core import devices, formats, models
+from gigaam_ui.core.events import Job, default_output
+from gigaam_ui.desktop.worker import TranscribeWorker
+from gigaam_ui.installer.engine import find_engine
 
 AUDIO_FILTER = "Audio/video (*.wav *.mp3 *.flac *.ogg *.m4a *.mp4 *.mkv *.avi *.mov);;All (*)"
 
@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Giga Transcribe")
+        self.setWindowTitle("GigaAM-UI")
         self.resize(720, 560)
         self._job_path = ""
         self._thread = None
@@ -217,7 +217,7 @@ class MainWindow(QMainWindow):
         self._thread.start()
 
     def _start_engine_process(self, job, engine_exe):
-        from giga_transcribe.desktop.worker_process import EngineProcessWorker
+        from gigaam_ui.desktop.worker_process import EngineProcessWorker
         self._thread = None
         self._worker = EngineProcessWorker(job, engine_exe)
         self._wire_common()

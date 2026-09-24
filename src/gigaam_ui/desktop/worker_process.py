@@ -9,7 +9,7 @@ import tempfile
 
 from PySide6.QtCore import QObject, QProcess, Signal, Slot
 
-from giga_transcribe.core.events import JobResult, Progress, Segment
+from gigaam_ui.core.events import JobResult, Progress, Segment
 
 
 class EngineProcessWorker(QObject):

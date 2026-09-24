@@ -12,8 +12,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from giga_transcribe.installer import setup
-from giga_transcribe.installer.state import data_dir
+from gigaam_ui.installer import setup
+from gigaam_ui.installer.state import data_dir
 from .setup_worker import SetupWorker
 
 
@@ -33,7 +33,7 @@ class SetupPage(QWidget):
         self._target = Path(target or data_dir())
         self._thread = None
         self._received = {}
-        self.setWindowTitle("Giga Transcribe — установка компонентов")
+        self.setWindowTitle("GigaAM-UI — установка компонентов")
 
         root = QVBoxLayout()
         title = QLabel("Первый запуск: нужно скачать компоненты"

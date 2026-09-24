@@ -1,5 +1,5 @@
 """chunk_spans: pure logic, no model."""
-from giga_transcribe.core.vad import chunk_spans
+from gigaam_ui.core.vad import chunk_spans
 
 
 def test_merges_short_spans():

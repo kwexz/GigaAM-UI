@@ -1,4 +1,4 @@
-# Giga Transcribe
+# GigaAM-UI
 
 > 🇬🇧 Read in English: [README.md](README.md)
 
@@ -13,13 +13,13 @@
 
 ## Быстрый старт (пользователю)
 
-1. Скачайте крошечный установщик со страницы [Releases](https://github.com/kwexz/isMemory/releases):
-   `GigaTranscribe-Setup-Windows.zip` или `GigaTranscribe-Setup-macOS.zip` (~12 МБ).
+1. Скачайте крошечный установщик со страницы [Releases](https://github.com/kwexz/GigaAM-UI/releases):
+   `GigaAM-UI-Setup-Windows.zip` или `GigaAM-UI-Setup-macOS.zip` (~12 МБ).
 2. Распакуйте, запустите, нажмите **«Скачать и установить»**,
    затем **«Запустить»**.
 3. Откройте или перетащите файл, нажмите **«Распознать»**.
 
-Нужна ручная установка? `GigaTranscribe-Windows.zip` / `-macOS.zip` — полное
+Нужна ручная установка? `GigaAM-UI-Windows.zip` / `-macOS.zip` — полное
 приложение (`GigaAM-UI`) со своей setup-страницей для движка и FFmpeg.
 
 > Сборки пока без цифровой подписи: SmartScreen / Gatekeeper покажут
@@ -74,10 +74,10 @@ pip install -e .          # зависимости из pyproject.toml
 pip install pytest PySide6  # тесты и GUI
 
 # консоль
-PYTHONPATH=src python -m giga_transcribe "input/call.wav" --format srt
+PYTHONPATH=src python -m gigaam_ui "input/call.wav" --format srt
 
 # GUI
-PYTHONPATH=src python -m giga_transcribe.desktop.app
+PYTHONPATH=src python -m gigaam_ui.desktop.app
 ```
 
 Нужны: Python 3.12, ffmpeg в PATH. HF-токен **не нужен**

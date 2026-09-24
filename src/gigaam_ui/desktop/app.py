@@ -3,11 +3,11 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
-from giga_transcribe.core import compat
-from giga_transcribe.desktop.main_window import MainWindow
-from giga_transcribe.desktop.setup_page import SetupPage
-from giga_transcribe.installer import builtin, setup
-from giga_transcribe.installer.state import data_dir
+from gigaam_ui.core import compat
+from gigaam_ui.desktop.main_window import MainWindow
+from gigaam_ui.desktop.setup_page import SetupPage
+from gigaam_ui.installer import builtin, setup
+from gigaam_ui.installer.state import data_dir
 
 
 def main(argv=None) -> int:

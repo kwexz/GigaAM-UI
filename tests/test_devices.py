@@ -1,8 +1,8 @@
 """Devices: detection, resolve, fit guard. CUDA parts conditional on hardware."""
 import torch
 
-from giga_transcribe.core import devices
-from giga_transcribe.core.devices import DeviceInfo
+from gigaam_ui.core import devices
+from gigaam_ui.core.devices import DeviceInfo
 
 
 def test_cpu_always_present():

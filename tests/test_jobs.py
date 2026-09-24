@@ -1,9 +1,9 @@
 """Jobs with a fake engine — no model, no network."""
 import os
 
-import giga_transcribe.core.jobs as jobs_mod
-from giga_transcribe.core import jobs
-from giga_transcribe.core.events import Segment
+import gigaam_ui.core.jobs as jobs_mod
+from gigaam_ui.core import jobs
+from gigaam_ui.core.events import Segment
 
 
 class FakeEngine:

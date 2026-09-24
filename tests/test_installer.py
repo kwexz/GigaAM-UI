@@ -5,8 +5,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
 
-from giga_transcribe.installer import downloads, manifest as manifest_mod
-from giga_transcribe.installer import state as state_mod
+from gigaam_ui.installer import downloads, manifest as manifest_mod
+from gigaam_ui.installer import state as state_mod
 
 PAYLOAD = bytes(range(256)) * 400  # 102400 bytes
 SHA = hashlib.sha256(PAYLOAD).hexdigest()

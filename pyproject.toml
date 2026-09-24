@@ -3,7 +3,7 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "giga-transcribe"
+name = "gigaam-ui"
 version = "0.1.0"
 description = "Desktop audio/video transcription with GigaAM-v3 (PySide6, Win/macOS)"
 requires-python = ">=3.11"
@@ -24,8 +24,8 @@ dependencies = [
 ]
 
 [project.scripts]
-giga-transcribe = "giga_transcribe.__main__:main"
-giga-transcribe-gui = "giga_transcribe.desktop.app:main"
+gigaam-ui = "gigaam_ui.__main__:main"
+gigaam-ui-gui = "gigaam_ui.desktop.app:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

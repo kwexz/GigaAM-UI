@@ -3,7 +3,7 @@ import urllib.request
 
 from .manifest import Manifest
 
-RELEASE_MANIFEST_URL = ("https://github.com/kwexz/isMemory/releases/latest"
+RELEASE_MANIFEST_URL = ("https://github.com/kwexz/GigaAM-UI/releases/latest"
                         "/download/manifest.json")
 
 

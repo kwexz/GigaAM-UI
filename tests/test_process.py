@@ -7,10 +7,10 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import pytest
 from PySide6.QtWidgets import QApplication
 
-from giga_transcribe.core.events import Job
-from giga_transcribe.desktop.worker_process import EngineProcessWorker
-from giga_transcribe.installer import builtin
-from giga_transcribe.installer.engine import find_engine
+from gigaam_ui.core.events import Job
+from gigaam_ui.desktop.worker_process import EngineProcessWorker
+from gigaam_ui.installer import builtin
+from gigaam_ui.installer.engine import find_engine
 
 
 @pytest.fixture(scope="module")
@@ -62,13 +62,13 @@ def test_double_finish_guarded(qapp, tmp_path):
 
 
 def test_find_engine(tmp_path):
-    from giga_transcribe.installer.engine import find_engine as _find
+    from gigaam_ui.installer.engine import find_engine as _find
     assert _find(tmp_path) is None
 
 
 def test_pick_launch_target_prefers_app(tmp_path):
     import sys
-    from giga_transcribe.stub.app import pick_launch_target
+    from gigaam_ui.stub.app import pick_launch_target
     assert pick_launch_target(tmp_path) is None
     app_name = "GigaAM-UI.exe" if sys.platform == "win32" else "GigaAM-UI"
     eng_name = "GigaAM-Worker.exe" if sys.platform == "win32" else "GigaAM-Worker"
@@ -85,7 +85,7 @@ def test_pick_launch_target_prefers_app(tmp_path):
 
 def test_find_app(tmp_path):
     import sys
-    from giga_transcribe.installer.engine import find_app
+    from gigaam_ui.installer.engine import find_app
     name = "GigaAM-UI.exe" if sys.platform == "win32" else "GigaAM-UI"
     plat = "win-x64" if sys.platform == "win32" else "mac-arm64"
     exe = tmp_path / f"ui-{plat}" / "GigaAM-UI" / name
@@ -95,7 +95,7 @@ def test_find_app(tmp_path):
 
 
 def test_find_engine_platform(tmp_path, monkeypatch):
-    import giga_transcribe.installer.engine as eng_mod
+    import gigaam_ui.installer.engine as eng_mod
     for d, exe in (("engine-cpu-win-x64", "GigaAM-Worker.exe"),
                    ("engine-cpu-mac-arm64", "GigaAM-Worker")):
         p = tmp_path / d / "GigaAM-Worker" / exe

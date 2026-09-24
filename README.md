@@ -1,4 +1,4 @@
-# Giga Transcribe
+# GigaAM-UI
 
 > 🇷🇺 Читать на русском: [README.ru.md](README.ru.md)
 
@@ -13,13 +13,13 @@ Local, no cloud: GigaAM-v3 model + Silero VAD, Windows and macOS Apple Silicon.
 
 ## Quick start (users)
 
-1. Download the tiny setup stub from [Releases](https://github.com/kwexz/isMemory/releases):
-   `GigaTranscribe-Setup-Windows.zip` or `GigaTranscribe-Setup-macOS.zip` (~12 MB).
+1. Download the tiny setup stub from [Releases](https://github.com/kwexz/GigaAM-UI/releases):
+   `GigaAM-UI-Setup-Windows.zip` or `GigaAM-UI-Setup-macOS.zip` (~12 MB).
 2. Unpack, run the stub, press **"Download and install"** —
    it shows contents and total size up front, then offers **"Launch"**.
 3. Open or drag & drop a file, press **"Transcribe"**.
 
-Prefer manual setup? `GigaTranscribe-Windows.zip` / `-macOS.zip` holds the full
+Prefer manual setup? `GigaAM-UI-Windows.zip` / `-macOS.zip` holds the full
 app (`GigaAM-UI`) with its own setup page for engine + FFmpeg.
 
 > Builds are not code-signed yet: SmartScreen / Gatekeeper will show
@@ -74,10 +74,10 @@ pip install -e .          # dependencies from pyproject.toml
 pip install pytest PySide6  # tests and GUI
 
 # console
-PYTHONPATH=src python -m giga_transcribe "input/call.wav" --format srt
+PYTHONPATH=src python -m gigaam_ui "input/call.wav" --format srt
 
 # GUI
-PYTHONPATH=src python -m giga_transcribe.desktop.app
+PYTHONPATH=src python -m gigaam_ui.desktop.app
 ```
 
 Requirements: Python 3.12, ffmpeg on PATH. No HF token needed

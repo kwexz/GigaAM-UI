@@ -6,9 +6,9 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import pytest
 from PySide6.QtWidgets import QApplication
 
-from giga_transcribe.core.events import Progress, Segment
-from giga_transcribe.desktop.main_window import MainWindow
-from giga_transcribe.desktop.worker import TranscribeWorker
+from gigaam_ui.core.events import Progress, Segment
+from gigaam_ui.desktop.main_window import MainWindow
+from gigaam_ui.desktop.worker import TranscribeWorker
 
 
 @pytest.fixture(scope="module")
@@ -29,7 +29,7 @@ def test_window_builds(qapp):
 
 
 def test_no_engine_offers_setup(qapp, monkeypatch, tmp_path):
-    import giga_transcribe.desktop.main_window as mw_mod
+    import gigaam_ui.desktop.main_window as mw_mod
     from PySide6.QtWidgets import QMessageBox
     monkeypatch.setattr(mw_mod, "find_engine", lambda: None)
     monkeypatch.setattr(mw_mod.devices, "has_torch", lambda: False)
@@ -46,7 +46,7 @@ def test_no_engine_offers_setup(qapp, monkeypatch, tmp_path):
 
 
 def test_worker_relays_events(qapp, monkeypatch):
-    import giga_transcribe.core.jobs as jobs_mod
+    import gigaam_ui.core.jobs as jobs_mod
 
     seg = Segment(1, 0.0, 1.5, "hello")
 

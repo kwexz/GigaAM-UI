@@ -3,9 +3,9 @@ import json
 
 import pytest
 
-import giga_transcribe.core.jobs as jobs_mod
-from giga_transcribe.core.events import Progress, Segment
-from giga_transcribe.worker.__main__ import main
+import gigaam_ui.core.jobs as jobs_mod
+from gigaam_ui.core.events import Progress, Segment
+from gigaam_ui.worker.__main__ import main
 
 
 def write_job(tmp_path, **over):
@@ -29,7 +29,7 @@ def run_main(argv, capsys):
 def fake_engine(monkeypatch):
     def fake_run(job, *, on_stage=None, on_segments=None, on_chunk=None,
                  should_cancel=None):
-        from giga_transcribe.core.jobs import JobResult
+        from gigaam_ui.core.jobs import JobResult
         on_stage("loading_model")
         on_stage("transcribing")
         on_segments(2)

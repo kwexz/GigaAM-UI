@@ -1,7 +1,7 @@
 import pytest
 
-from giga_transcribe.core import formats
-from giga_transcribe.core.events import Segment
+from gigaam_ui.core import formats
+from gigaam_ui.core.events import Segment
 
 
 def segs():

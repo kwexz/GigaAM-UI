@@ -1,4 +1,4 @@
-"""GigaAM-Worker: `python -m giga_transcribe.worker --job job.json`.
+"""GigaAM-Worker: `python -m gigaam_ui.worker --job job.json`.
 
 Protocol (v1, one JSON object per stdout line):
   {"type": "stage", "name": "loading_model" | "transcribing"}
@@ -26,10 +26,10 @@ def log(*parts) -> None:
 
 
 def main(argv=None) -> int:
-    from giga_transcribe.core import compat, devices, formats, jobs, models
+    from gigaam_ui.core import compat, devices, formats, jobs, models
 
     compat.load_dotenv()
-    ap = argparse.ArgumentParser(description="giga-transcribe inference worker")
+    ap = argparse.ArgumentParser(description="gigaam-ui inference worker")
     ap.add_argument("--job", required=True, help="path to job.json")
     ap.add_argument("--cancel-file", default=None,
                     help="worker stops when this file appears")

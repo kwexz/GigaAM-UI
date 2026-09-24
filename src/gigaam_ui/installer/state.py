@@ -3,8 +3,8 @@ import os
 import sys
 from pathlib import Path
 
-APP_DIR_NAME = "Giga Transcribe"
-ENV_OVERRIDE = "GIGA_TRANSCRIBE_DATA"
+APP_DIR_NAME = "GigaAM-UI"
+ENV_OVERRIDE = "GIGAAM_UI_DATA"
 
 
 def data_dir() -> Path:

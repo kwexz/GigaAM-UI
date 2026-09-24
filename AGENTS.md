@@ -1,4 +1,4 @@
-# AGENTS.md — giga-transcribe
+# AGENTS.md — GigaAM-UI
 
 Desktop app (PySide6, Windows + macOS Apple Silicon) for audio/video transcription
 with GigaAM-v3 + Silero VAD. Inference runs in a downloaded engine bundle via
